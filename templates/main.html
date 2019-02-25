@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>{{ title }}</title>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
+		<script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+	</head>
+	<body>
+		<section class="section">
+			<div class="container">
+				<h1 class="title is-1">{{ title }}</h1>
+				<!-- for mobile -->
+				<nav class="navbar is-danger is-hidden-desktop" role="navigation" aria-label="main navigation">
+					<div class="navbar-brand">
+						<span class="navbar-item" style="margin-left: 1em;">Gruppen</span>
+						<a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+							<span aria-hidden="true"></span>
+							<span aria-hidden="true"></span>
+							<span aria-hidden="true"></span>
+						</a>
+					</div>
+
+					<div class="navbar-menu">
+						<div class="navbar-start">
+							{% for group in groups %}
+							<a class="navbar-item{% if group.active %} is-active{% endif %}">{{ group.name }}</a>
+							{% endfor %}
+						</div>
+					</div>
+				</nav>
+
+				<!-- for desktop -->
+				<div class="tabs is-hidden-touch">
+					<ul>
+						{% for group in groups %}
+						<li {% if group.active %}class="is-active"{% endif %}><a>{{ group.name }}</a></li>
+						{% endfor %}
+					</ul>
+				</div>
+
+				<nav class="level">
+					<div class="level-left">
+						<div class="level-item">Vorhandene Pads für Gruppe: {{ active_group }}</div>
+					</div>
+					<div class="level-right">
+						<div class="level-item">
+							<a class="button">
+								<span class="icon"><i class="far fa-plus-square"></i></span>
+								<span>Neues Pad</span>
+							</a>
+						</div>
+					</div>
+				</nav>
+
+				<div>
+					<table class="table is-fullwidth is-bordered is-hoverable">
+						<colgroup>
+							<col span="1" style="width: 1em;">
+							<col span="1">
+							<col span="1" style="width: 4em;">
+						</colgroup>
+						<tbody>
+							{% for pad in pads %}
+							<tr>
+								<td><span class="icon">{% if pad.public %}<i class="fas fa-globe-americas">{% else %}<i class="fas fa-home">{% endif %}</i></span></td>
+								<td>{{ pad.title }}</td>
+								<td><span class="tag">{{ pad.date }}</span></td>
+							</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				
+				</div>
+			</div>
+
+		</section>
+
+		<footer class="footer">
+			<div class="content has-text-centered">
+				<p>
+				<strong>Padwoman</strong> build <a href="#">5f0d073</a>.
+				The source code is licensed <a href="http://opensource.org/licenses/todo-license.php">TODO</a>.
+				</p>
+			</div>
+		</footer>
+	</body>
+</html>
