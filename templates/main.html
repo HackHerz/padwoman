@@ -8,13 +8,11 @@
 		<script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
 	</head>
 	<body>
-		<section class="section">
-			<div class="container">
-				<h1 class="title is-1">{{ title }}</h1>
+
 				<!-- for mobile -->
-				<nav class="navbar is-danger is-hidden-desktop" role="navigation" style="margin-bottom: 1em;" aria-label="main navigation">
+				<nav class="navbar is-danger is-hidden-desktop" role="navigation" aria-label="main navigation">
 					<div class="navbar-brand">
-						<span class="navbar-item" style="margin-left: 1em;">Gruppen</span>
+						<span class="navbar-item">Gruppen</span>
 						<a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navMenu">
 							<span aria-hidden="true"></span>
 							<span aria-hidden="true"></span>
@@ -31,6 +29,11 @@
 					</div>
 				</nav>
 
+
+		<section class="section">
+			<div class="container">
+				<h1 class="title is-1">{{ title }}</h1>
+
 				<!-- for desktop -->
 				<div class="tabs is-hidden-touch">
 					<ul>
@@ -40,6 +43,7 @@
 					</ul>
 				</div>
 
+				<!-- Show active Group and display Button to create a new pad -->
 				<nav class="level">
 					<div class="level-left">
 						<div class="level-item">Vorhandene Pads für Gruppe: {{ active_group }}</div>
@@ -54,6 +58,7 @@
 					</div>
 				</nav>
 
+				<!-- list all tables for the active group -->
 				<div>
 					<table class="table is-fullwidth is-bordered is-hoverable">
 						<colgroup>
@@ -103,7 +108,7 @@
 						<div class="field-body">
 							<div class="field">
 								<div class="control">
-									<input class="input" type="text" placeholder="e.g. Partnership opportunity">
+									<input class="input" type="text" placeholder="Total wichtige Dinge" value="{{ new_pad_name }}">
 								</div>
 							</div>
 						</div>
