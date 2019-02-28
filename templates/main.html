@@ -12,17 +12,17 @@
 			<div class="container">
 				<h1 class="title is-1">{{ title }}</h1>
 				<!-- for mobile -->
-				<nav class="navbar is-danger is-hidden-desktop" role="navigation" aria-label="main navigation">
+				<nav class="navbar is-danger is-hidden-desktop" role="navigation" style="margin-bottom: 1em;" aria-label="main navigation">
 					<div class="navbar-brand">
 						<span class="navbar-item" style="margin-left: 1em;">Gruppen</span>
-						<a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+						<a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navMenu">
 							<span aria-hidden="true"></span>
 							<span aria-hidden="true"></span>
 							<span aria-hidden="true"></span>
 						</a>
 					</div>
 
-					<div class="navbar-menu">
+					<div class="navbar-menu" id="navMenu">
 						<div class="navbar-start">
 							{% for group in groups %}
 							<a class="navbar-item{% if group.active %} is-active{% endif %}">{{ group.name }}</a>
@@ -46,7 +46,7 @@
 					</div>
 					<div class="level-right">
 						<div class="level-item">
-							<a class="button">
+							<a class="button" id="newPad">
 								<span class="icon"><i class="far fa-plus-square"></i></span>
 								<span>Neues Pad</span>
 							</a>
@@ -85,5 +85,99 @@
 				</p>
 			</div>
 		</footer>
+
+		<!-- Modal to create new pads -->
+		<div class="modal" id="createModal">
+			<div class="modal-background"></div>
+			<div class="modal-card">
+				<header class="modal-card-head">
+					<p class="modal-card-title">Neues Pad</p>
+					<button class="delete" aria-label="close" id="createModalClose"></button>
+				</header>
+				<section class="modal-card-body">
+
+					<div class="field is-horizontal">
+						<div class="field-label is-normal">
+							<label class="label">Name</label>
+						</div>
+						<div class="field-body">
+							<div class="field">
+								<div class="control">
+									<input class="input" type="text" placeholder="e.g. Partnership opportunity">
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="field is-horizontal">
+						<div class="field-label">
+							<label class="label">Vorlage verwenden?</label>
+						</div>
+						<div class="field-body">
+							<div class="field is-narrow">
+								<div class="control">
+									<label class="radio">
+										<input type="radio" name="member">
+										Yes
+									</label>
+									<label class="radio">
+										<input type="radio" name="member">
+										No
+									</label>
+								</div>
+							</div>
+						</div>
+					</div>
+
+				</section>
+				<footer class="modal-card-foot ">
+					<button class="button is-success">Create Pad</button>
+					<button class="button">Cancel</button>
+				</footer>
+			</div>
+		</div>
+
+		<!-- JS to make things work -->
+	<script>
+		// Modal
+		document.getElementById('newPad').addEventListener('click', () => {
+			var createModal = document.getElementById('createModal');
+			createModal.classList.toggle('is-active');
+		});
+
+		// Closing the modal
+		document.getElementById('createModalClose').addEventListener('click', () => {
+			var createModal = document.getElementById('createModal');
+			createModal.classList.toggle('is-active');
+		});
+
+
+		// Navbar
+		document.addEventListener('DOMContentLoaded', () => {
+
+			// Get all "navbar-burger" elements
+			const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
+
+			// Check if there are any navbar burgers
+			if ($navbarBurgers.length > 0) {
+
+				// Add a click event on each of them
+				$navbarBurgers.forEach( el => {
+					el.addEventListener('click', () => {
+
+						// Get the target from the "data-target" attribute
+						const target = el.dataset.target;
+						const $target = document.getElementById(target);
+
+						// Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
+						el.classList.toggle('is-active');
+						$target.classList.toggle('is-active');
+
+					});
+				});
+			}
+
+		});
+	</script>
 	</body>
 </html>
