@@ -38,7 +38,7 @@
 				<div class="tabs is-hidden-touch">
 					<ul>
 						{% for group in groups %}
-						<li {% if group.active %}class="is-active"{% endif %}><a>{{ group.name }}</a></li>
+						<li {% if group.active == active_group %}class="is-active"{% endif %}><a href="?group={{ group.name }}">{{ group.name }}</a></li>
 						{% endfor %}
 					</ul>
 				</div>
@@ -82,65 +82,11 @@
 
 		</section>
 
-		<footer class="footer">
-			<div class="content has-text-centered">
-				<p>
-				<strong>Padwoman</strong> build <a href="#">5f0d073</a>.
-				The source code is licensed <a href="http://opensource.org/licenses/todo-license.php">TODO</a>.
-				</p>
-			</div>
-		</footer>
+		<!-- footer -->
+		{% include 'footer.html' %}
 
 		<!-- Modal to create new pads -->
-		<div class="modal" id="createModal">
-			<div class="modal-background"></div>
-			<div class="modal-card">
-				<header class="modal-card-head">
-					<p class="modal-card-title">Neues Pad</p>
-					<button class="delete" aria-label="close" id="createModalClose"></button>
-				</header>
-				<section class="modal-card-body">
-
-					<div class="field is-horizontal">
-						<div class="field-label is-normal">
-							<label class="label">Name</label>
-						</div>
-						<div class="field-body">
-							<div class="field">
-								<div class="control">
-									<input class="input" type="text" placeholder="Total wichtige Dinge" value="{{ new_pad_name }}">
-								</div>
-							</div>
-						</div>
-					</div>
-
-					<div class="field is-horizontal">
-						<div class="field-label">
-							<label class="label">Vorlage verwenden?</label>
-						</div>
-						<div class="field-body">
-							<div class="field is-narrow">
-								<div class="control">
-									<label class="radio">
-										<input type="radio" name="member">
-										Yes
-									</label>
-									<label class="radio">
-										<input type="radio" name="member">
-										No
-									</label>
-								</div>
-							</div>
-						</div>
-					</div>
-
-				</section>
-				<footer class="modal-card-foot ">
-					<button class="button is-danger">Create Pad</button>
-					<button class="button">Cancel</button>
-				</footer>
-			</div>
-		</div>
+		{% include 'modal.html' %}
 
 		<!-- JS to make things work -->
 		<script src="{{ url_for('static', filename='js/components.js') }}"></script>

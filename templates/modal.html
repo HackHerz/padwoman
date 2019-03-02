@@ -1,0 +1,53 @@
+<div class="modal" id="createModal">
+	<div class="modal-background"></div>
+	<div class="modal-card">
+		<header class="modal-card-head">
+			<p class="modal-card-title">Neues Pad</p>
+			<button class="delete" aria-label="close" id="createModalClose"></button>
+		</header>
+		<form id="modalForm">
+			<section class="modal-card-body">
+
+				<div class="field is-horizontal">
+					<div class="field-label is-normal">
+						<label class="label">Name</label>
+					</div>
+					<div class="field-body">
+						<div class="field">
+							<div class="control">
+								<input class="input" id="modalTextfield" type="text" placeholder="Total wichtige Dinge" value="{{ new_pad_name }}">
+							</div>
+						</div>
+					</div>
+				</div>
+
+				{% if group_has_template %}
+				<div class="field is-horizontal">
+					<div class="field-label">
+						<label class="label">Vorlage verwenden?</label>
+					</div>
+					<div class="field-body">
+						<div class="field is-narrow">
+							<div class="control">
+								<label class="radio">
+									<input type="radio" name="member">
+									Yes
+								</label>
+								<label class="radio">
+									<input type="radio" name="member">
+									No
+								</label>
+							</div>
+						</div>
+					</div>
+				</div>
+				{% endif %}
+
+			</section>
+		</form>
+		<footer class="modal-card-foot has-text-right">
+			<button class="button is-danger" id="modalButton">Create Pad</button>
+			<!--<button class="button">Cancel</button>-->
+		</footer>
+	</div>
+</div>

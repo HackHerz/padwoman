@@ -4,11 +4,34 @@ document.getElementById('newPad').addEventListener('click', () => {
 	createModal.classList.toggle('is-active');
 });
 
+
+
 // Closing the modal
 document.getElementById('createModalClose').addEventListener('click', () => {
 	var createModal = document.getElementById('createModal');
 	createModal.classList.toggle('is-active');
+
+	// remove warning and input from textfield
+	var modalInput = document.getElementById('modalTextfield');
+	modalInput.classList.remove('is-danger');
+	document.getElementById('modalForm').reset();
 });
+
+
+
+// Creating a new Pad
+document.getElementById('modalButton').addEventListener('click', () => {
+	var modalInput = document.getElementById('modalTextfield');
+	var modalButton = document.getElementById('modalButton');
+
+	// Check if there is a name for the new pad
+	if(modalInput.value === "") {
+		modalInput.classList.add('is-danger');
+	} else {
+		modalButton.classList.add('is-loading');
+	}
+});
+
 
 
 // Navbar
