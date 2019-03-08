@@ -57,7 +57,7 @@ def login():
         return render_template('login.html', title=settings.data['default']['title'])
 
     # Check if there is data to login the user
-    username = request.form['username']
+    username = request.form['username'] # FIXME
 
     if ldaphandler.verifyPw(username, request.form['password']):
         user = userclass.User()
