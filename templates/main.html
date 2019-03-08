@@ -44,6 +44,7 @@
 					<div class="level-left">
 						<div class="level-item">Vorhandene Pads für Gruppe: {{ active_group }}</div>
 					</div>
+					{% if groupExistsAndAllowed %}
 					<div class="level-right">
 						<div class="level-item">
 							<a class="button" id="newPad">
@@ -52,9 +53,11 @@
 							</a>
 						</div>
 					</div>
+					{% endif %}
 				</nav>
 
 				<!-- list all tables for the active group -->
+				{% if groupExistsAndAllowed %}
 				<div>
 					<table class="table is-fullwidth is-bordered is-hoverable">
 						<colgroup>
@@ -74,6 +77,13 @@
 					</table>
 				
 				</div>
+				{% else %}
+				<article class="message is-danger">
+					<div class="message-body">
+						The Group "<strong>{{ active_group }}</strong>" does either not exist or you do not have the necessary permissions.
+					</div>
+				</article>
+				{% endif %}
 			</div>
 
 		</section>

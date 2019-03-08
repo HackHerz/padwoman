@@ -59,7 +59,7 @@ fake_data = [
 
 fake_groups = [
         { 'name' : 'Allgemein', 'id' : 'allgemein' },
-        { 'name' : 'Sitzung', 'id' : 'sitzung', 'active': True },
+        { 'name' : 'Sitzung', 'id' : 'sitzung' },
         { 'name' : 'Redaktion', 'id' : 'redaktion' },
         { 'name' : 'Admins', 'id' : 'admins' },
         ]
@@ -144,9 +144,15 @@ def index():
     if active_group == None:
         active_group = 'Allgemein' # FIXME
 
+    # Check if user is allowed to view this group
+    if any(active_group == c['name'] for c in fake_groups):
+        groupExistsAndAllowed = True
+    else:
+        groupExistsAndAllowed = False
+
     return render_template('main.html', title=config['default']['title'],
             pads=fake_data, groups=fake_groups, active_group=active_group,
-            group_has_template=True)
+            group_has_template=True, groupExistsAndAllowed=groupExistsAndAllowed)
 
 
 
