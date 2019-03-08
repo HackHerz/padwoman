@@ -2,22 +2,24 @@ from flask import render_template
 from flask import request, redirect, url_for
 from flask import Flask
 import flask_login
-import configparser
 import ldap
 
+# Own stuff
+import userclass
+import settings
 
-# Read Configuration
-config = configparser.ConfigParser()
-config.read('settings.ini')
 
 # LDAP
-connect = ldap.initialize(config['ldap']['server'])
+connect = ldap.initialize(settings.data['ldap']['server'])
+
 connect.set_option(ldap.OPT_REFERRALS, 0)
-connect.simple_bind_s(config['ldap']['binddn'], config['ldap']['bindpw'])
+
+connect.simple_bind_s(settings.data['ldap']['binddn'],
+        settings.data['ldap']['bindpw'])
 
 # Flask
 app = Flask(__name__)
-app.secret_key = 'super secret key' # change this
+app.secret_key = settings.getSecretKey()
 
 
 # Flask login
@@ -25,22 +27,17 @@ login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
 
-users = {'dstein', 'britzel'} # FIXME
-
-class User(flask_login.UserMixin):
-    pass
-
 @login_manager.user_loader
 def user_loader(uid):
-    query = config['ldap']['userfilter'] % uid
-    ldap_user = connect.search_s(config['ldap']['usertree'], ldap.SCOPE_SUBTREE,
+    query = settings.data['ldap']['userfilter'] % uid
+    ldap_user = connect.search_s(settings.data['ldap']['usertree'], ldap.SCOPE_SUBTREE,
             query, ['cn'])
 
     # User does not exist
     if len(ldap_user) == 0:
         return
 
-    user = User()
+    user = userclass.User()
     user.id = uid
     return user
 
@@ -57,14 +54,6 @@ fake_data = [
         { 'title': 'sitzung_08', 'date': '2018-18-18 18:18' },
         ]
 
-fake_groups = [
-        { 'name' : 'Allgemein', 'id' : 'allgemein' },
-        { 'name' : 'Sitzung', 'id' : 'sitzung' },
-        { 'name' : 'Redaktion', 'id' : 'redaktion' },
-        { 'name' : 'Admins', 'id' : 'admins' },
-        ]
-
-
 # Verifying login
 def verify_pw(username, password):
     print("pw is being checked...")
@@ -75,8 +64,8 @@ def verify_pw(username, password):
 
     # Verify user against ldap
     # first get the cn
-    query = config['ldap']['userfilter'] % username
-    ldap_user = connect.search_s(config['ldap']['usertree'], ldap.SCOPE_SUBTREE,
+    query = settings.data['ldap']['userfilter'] % username
+    ldap_user = connect.search_s(settings.data['ldap']['usertree'], ldap.SCOPE_SUBTREE,
             query, ['cn'])
 
     # User does not exist
@@ -87,7 +76,7 @@ def verify_pw(username, password):
 
     # Check PW
     try:
-        pw_test = ldap.initialize(config['ldap']['server'])
+        pw_test = ldap.initialize(settings.data['ldap']['server'])
         pw_test.bind_s(dn_user, password)
         pw_test.unbind_s()
 
@@ -108,19 +97,19 @@ def login():
 
     # Render the view
     if request.method == 'GET':
-        return render_template('login.html', title=config['default']['title'])
+        return render_template('login.html', title=settings.data['default']['title'])
 
     # Check if there is data to login the user
     username = request.form['username']
 
     if verify_pw(username, request.form['password']):
-        user = User()
+        user = userclass.User()
         user.id = username
         flask_login.login_user(user)
 
         return redirect(next or url_for('index'))
 
-    return render_template('login.html', title=config['default']['title'],
+    return render_template('login.html', title=settings.data['default']['title'],
             loginFailed=True)
 
 
@@ -142,16 +131,13 @@ def index():
 
     # default group
     if active_group == None:
-        active_group = 'Allgemein' # FIXME
+        active_group = settings.getDefaultGroup("", "") # FIXME
 
     # Check if user is allowed to view this group
-    if any(active_group == c['name'] for c in fake_groups):
-        groupExistsAndAllowed = True
-    else:
-        groupExistsAndAllowed = False
-
-    return render_template('main.html', title=config['default']['title'],
-            pads=fake_data, groups=fake_groups, active_group=active_group,
+    groupExistsAndAllowed = active_group in settings.getPadGroups("", "")
+ 
+    return render_template('main.html', title=settings.data['default']['title'],
+            pads=fake_data, groups=settings.getPadGroups("", ""), active_group=active_group,
             group_has_template=True, groupExistsAndAllowed=groupExistsAndAllowed)
 
 

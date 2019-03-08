@@ -19,7 +19,7 @@
 					<div class="navbar-menu" id="navMenu">
 						<div class="navbar-start">
 							{% for group in groups %}
-							<a class="navbar-item{% if group.name == active_group %} is-active{% endif %}" href="?group={{ group.name }}">{{ group.name }}</a>
+							<a class="navbar-item{% if group == active_group %} is-active{% endif %}" href="?group={{ group }}">{{ group }}</a>
 							{% endfor %}
 						</div>
 					</div>
@@ -34,7 +34,7 @@
 				<div class="tabs is-hidden-touch">
 					<ul>
 						{% for group in groups %}
-						<li {% if group.name == active_group %}class="is-active"{% endif %}><a href="?group={{ group.name }}">{{ group.name }}</a></li>
+						<li {% if group == active_group %}class="is-active"{% endif %}><a href="?group={{ group }}">{{ group }}</a></li>
 						{% endfor %}
 					</ul>
 				</div>
