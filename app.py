@@ -2,20 +2,12 @@ from flask import render_template
 from flask import request, redirect, url_for
 from flask import Flask
 import flask_login
-import ldap
 
 # Own stuff
 import userclass
 import settings
+import ldaphandler
 
-
-# LDAP
-connect = ldap.initialize(settings.data['ldap']['server'])
-
-connect.set_option(ldap.OPT_REFERRALS, 0)
-
-connect.simple_bind_s(settings.data['ldap']['binddn'],
-        settings.data['ldap']['bindpw'])
 
 # Flask
 app = Flask(__name__)
@@ -29,16 +21,13 @@ login_manager.login_view = "login"
 
 @login_manager.user_loader
 def user_loader(uid):
-    query = settings.data['ldap']['userfilter'] % uid
-    ldap_user = connect.search_s(settings.data['ldap']['usertree'], ldap.SCOPE_SUBTREE,
-            query, ['cn'])
-
     # User does not exist
-    if len(ldap_user) == 0:
+    if ldaphandler.getDn(uid) == False:
         return
 
     user = userclass.User()
     user.id = uid
+    user.groups = ldaphandler.getGroups(user.id)
     return user
 
 
@@ -53,38 +42,6 @@ fake_data = [
         { 'title': 'sitzung_07', 'date': '2018-18-18 18:18' },
         { 'title': 'sitzung_08', 'date': '2018-18-18 18:18' },
         ]
-
-# Verifying login
-def verify_pw(username, password):
-    print("pw is being checked...")
-
-    # Check if username is empty
-    if username == "":
-        return False
-
-    # Verify user against ldap
-    # first get the cn
-    query = settings.data['ldap']['userfilter'] % username
-    ldap_user = connect.search_s(settings.data['ldap']['usertree'], ldap.SCOPE_SUBTREE,
-            query, ['cn'])
-
-    # User does not exist
-    if len(ldap_user) == 0:
-        return False
-
-    dn_user = ldap_user[0][0]
-
-    # Check PW
-    try:
-        pw_test = ldap.initialize(settings.data['ldap']['server'])
-        pw_test.bind_s(dn_user, password)
-        pw_test.unbind_s()
-
-    except ldap.LDAPError:
-        return False
-
-    return True
-
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -102,7 +59,7 @@ def login():
     # Check if there is data to login the user
     username = request.form['username']
 
-    if verify_pw(username, request.form['password']):
+    if ldaphandler.verifyPw(username, request.form['password']):
         user = userclass.User()
         user.id = username
         flask_login.login_user(user)
@@ -113,13 +70,11 @@ def login():
             loginFailed=True)
 
 
-
 # Logout
 @app.route('/logout')
 def logout():
     flask_login.logout_user()
     return redirect(url_for("login"))
-
 
 
 # Serving the actual site
@@ -131,15 +86,18 @@ def index():
 
     # default group
     if active_group == None:
-        active_group = settings.getDefaultGroup("", "") # FIXME
+        active_group = settings.getDefaultGroup(flask_login.current_user.id,
+                flask_login.current_user.getGroups())
 
     # Check if user is allowed to view this group
-    groupExistsAndAllowed = active_group in settings.getPadGroups("", "")
+    viewableGroups = settings.getPadGroups(flask_login.current_user.id,
+            flask_login.current_user.getGroups())
+
+    groupExistsAndAllowed = active_group in viewableGroups
  
     return render_template('main.html', title=settings.data['default']['title'],
-            pads=fake_data, groups=settings.getPadGroups("", ""), active_group=active_group,
+            pads=fake_data, groups=viewableGroups, active_group=active_group,
             group_has_template=True, groupExistsAndAllowed=groupExistsAndAllowed)
-
 
 
 # Run
