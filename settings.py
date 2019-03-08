@@ -41,3 +41,13 @@ def getSecretKey():
 
 def getDefaultGroup(uid, groupids):
     return getPadGroups(uid, groupids)[0]
+
+# Check if the group has a template
+def groupHasTemplate(groupid):
+    for g in data['padgroups']:
+        groupData = data['padgroups'][g]
+
+        if groupData['name'] == groupid and "content" in groupData.keys():
+            return True
+
+    return False

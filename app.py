@@ -65,14 +65,17 @@ def login():
         return render_template('login.html')
 
     # Check if there is data to login the user
-    username = request.form['username'] # FIXME
+    if 'username' in request.form.keys() and 'password' in request.form.keys():
+        username = request.form['username']
 
-    if ldaphandler.verifyPw(username, request.form['password']):
-        user = userclass.User()
-        user.id = username
-        flask_login.login_user(user)
+        # redirect to index if credentials are correct
+        if ldaphandler.verifyPw(username, request.form['password']):
 
-        return redirect(next or url_for('index'))
+            user = userclass.User()
+            user.id = username
+            flask_login.login_user(user)
+
+            return redirect(next or url_for('index'))
 
     return render_template('login.html', loginFailed=True)
 
@@ -103,7 +106,8 @@ def index():
     groupExistsAndAllowed = active_group in viewableGroups
  
     return render_template('main.html', pads=fake_data, groups=viewableGroups,
-            active_group=active_group, group_has_template=True,
+            active_group=active_group, 
+            group_has_template=settings.groupHasTemplate(active_group),
             groupExistsAndAllowed=groupExistsAndAllowed)
 
 
