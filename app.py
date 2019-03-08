@@ -7,6 +7,7 @@ import flask_login
 import userclass
 import settings
 import ldaphandler
+from _version import __version__
 
 
 # Flask
@@ -43,6 +44,13 @@ fake_data = [
         { 'title': 'sitzung_08', 'date': '2018-18-18 18:18' },
         ]
 
+# Jinja template variables which are always the same
+@app.context_processor
+def templateDefaultValues():
+    return dict(padwoman_version=__version__,
+            title=settings.data['default']['title'])
+
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -54,7 +62,7 @@ def login():
 
     # Render the view
     if request.method == 'GET':
-        return render_template('login.html', title=settings.data['default']['title'])
+        return render_template('login.html')
 
     # Check if there is data to login the user
     username = request.form['username'] # FIXME
@@ -66,8 +74,7 @@ def login():
 
         return redirect(next or url_for('index'))
 
-    return render_template('login.html', title=settings.data['default']['title'],
-            loginFailed=True)
+    return render_template('login.html', loginFailed=True)
 
 
 # Logout
@@ -95,9 +102,9 @@ def index():
 
     groupExistsAndAllowed = active_group in viewableGroups
  
-    return render_template('main.html', title=settings.data['default']['title'],
-            pads=fake_data, groups=viewableGroups, active_group=active_group,
-            group_has_template=True, groupExistsAndAllowed=groupExistsAndAllowed)
+    return render_template('main.html', pads=fake_data, groups=viewableGroups,
+            active_group=active_group, group_has_template=True,
+            groupExistsAndAllowed=groupExistsAndAllowed)
 
 
 # Run
