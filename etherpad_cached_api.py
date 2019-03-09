@@ -7,7 +7,7 @@ import settings
 
 
 # setup redis
-red = redis.Redis(host='localhost')
+red = redis.Redis(**settings.data['redis'])
 
 
 def requestHandler(endpoint, data):
