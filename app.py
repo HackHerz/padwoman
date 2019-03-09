@@ -15,7 +15,7 @@ from _version import __version__
 
 
 # Flask
-app = Flask(__name__)
+app = Flask(__name__, static_folder='assets')
 app.secret_key = settings.getSecretKey()
 api = Api(app) # API wuhuuu
 
