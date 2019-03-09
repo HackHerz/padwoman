@@ -7,6 +7,7 @@ import flask_login
 import userclass
 import settings
 import ldaphandler
+from etherpad_cached_api import *
 from _version import __version__
 
 
@@ -31,18 +32,6 @@ def user_loader(uid):
     user.groups = ldaphandler.getGroups(user.id)
     return user
 
-
-# Data
-fake_data = [
-        { 'title': 'sitzung_01', 'date': '2018-18-18 18:18', 'public': False },
-        { 'title': 'sitzung_02', 'date': '2018-18-18 18:18', 'public': True },
-        { 'title': 'sitzung_03', 'date': '2018-18-18 18:18' },
-        { 'title': 'sitzung_04', 'date': '2018-18-18 18:18' },
-        { 'title': 'sitzung_05', 'date': '2018-18-18 18:18' },
-        { 'title': 'sitzung_06', 'date': '2018-18-18 18:18' },
-        { 'title': 'sitzung_07', 'date': '2018-18-18 18:18' },
-        { 'title': 'sitzung_08', 'date': '2018-18-18 18:18' },
-        ]
 
 # Jinja template variables which are always the same
 @app.context_processor
@@ -80,6 +69,16 @@ def login():
     return render_template('login.html', loginFailed=True)
 
 
+# returns the human friendly name of a pad
+def humanPadName(padId):
+    splat = padId.split('$', 1)
+
+    if len(splat) > 1:
+        return splat[1]
+
+    return padId
+
+
 # Logout
 @app.route('/logout')
 def logout():
@@ -104,8 +103,26 @@ def index():
             flask_login.current_user.getGroups())
 
     groupExistsAndAllowed = active_group in viewableGroups
+
+
+    # Doing all the etherpadMagic
+    etherPadGroupIds = {}
+    for g in viewableGroups:
+        etherPadGroupIds[g] = createGroupIfNotExistsFor(g)
+        # TODO: cookies setzen für user
+
+    # Gathering information on the relevant pads for this group
+    etherCurrGroup = etherPadGroupIds[active_group]
+
+    padlist = []
+    for p in listPads(etherCurrGroup):
+        padlist.append({ 'title' : humanPadName(p),
+            'url' : settings.data['pad']['url'] + p,
+            'date' : getLastEdited(p),
+            'public' : getPublicStatus(p) })
+
  
-    return render_template('main.html', pads=fake_data, groups=viewableGroups,
+    return render_template('main.html', pads=padlist, groups=viewableGroups,
             active_group=active_group, 
             group_has_template=settings.groupHasTemplate(active_group),
             groupExistsAndAllowed=groupExistsAndAllowed)

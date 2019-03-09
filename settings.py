@@ -39,8 +39,10 @@ def getSecretKey():
     key = data['default']['secretkey'] # FIXME
     return key
 
+
 def getDefaultGroup(uid, groupids):
     return getPadGroups(uid, groupids)[0]
+
 
 # Check if the group has a template
 def groupHasTemplate(groupid):
