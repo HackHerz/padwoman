@@ -2,11 +2,13 @@ from flask import render_template
 from flask import request, redirect, url_for
 from flask import Flask
 import flask_login
+from flask_restful import Resource, Api, reqparse
 
 # Own stuff
 import userclass
 import settings
 import ldaphandler
+import microapi
 from etherpad_cached_api import *
 from _version import __version__
 
@@ -14,6 +16,7 @@ from _version import __version__
 # Flask
 app = Flask(__name__)
 app.secret_key = settings.getSecretKey()
+api = Api(app) # API wuhuuu
 
 
 # Flask login
@@ -126,6 +129,14 @@ def index():
             active_group=active_group, 
             group_has_template=settings.groupHasTemplate(active_group),
             groupExistsAndAllowed=groupExistsAndAllowed)
+
+
+# Api for the javascript ui
+api.add_resource(microapi.CreatePad,
+        '/uapi/CreatePad/<string:group>/<string:padName>')
+
+api.add_resource(microapi.PadVisibility,
+        '/uapi/PadVisibility/<string:padName>/<string:visibility>')
 
 
 # Run

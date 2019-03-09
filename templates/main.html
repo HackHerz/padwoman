@@ -68,8 +68,8 @@
 						<tbody>
 							{% for pad in pads %}
 							<tr>
-								<td><span class="icon">{% if pad.public %}<i class="fas fa-globe-americas">{% else %}<i class="fas fa-home">{% endif %}</i></span></td>
-								<td>{{ pad.title }}</td>
+								<td><a title="make the pad {%if pad.public %}private{% else %}public{% endif %}"><span class="icon">{% if pad.public %}<i class="fas fa-globe-americas">{% else %}<i class="fas fa-home">{% endif %}</i></span></a></td>
+								<td><a href="{{ pad.url }}">{{ pad.title }}</td>
 								<td><span class="tag">{{ pad.date }}</span></td>
 							</tr>
 							{% endfor %}

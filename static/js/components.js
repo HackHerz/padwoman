@@ -29,6 +29,21 @@ document.getElementById('modalButton').addEventListener('click', () => {
 		modalInput.classList.add('is-danger');
 	} else {
 		modalButton.classList.add('is-loading');
+
+		var currGroup = document.getElementById('currentGroup').value;
+		var newPadName = document.getElementById('modalTextfield').value;
+
+		// Mach mal response
+		// fail -> add class X
+		// success -> add haken und lade seite neu
+		request = new XMLHttpRequest();
+		request.open("GET", '/uapi/CreatePad/' + currGroup + '/' + newPadName); // FIXME
+		
+		request.addEventListener('load', function(event) {
+			console.log("Antwort");
+			location.reload(); 
+		});
+		request.send();
 	}
 });
 

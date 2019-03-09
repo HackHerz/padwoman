@@ -108,3 +108,15 @@ def getPublicStatus(padId):
 
     # Otherwise
     return False
+
+# set the public status of a pad
+def setPublicStatus(padID, publicStatus):
+    data = { 'padID' : padID, 'publicStatus' : publicStatus }
+    r = requestHandler('setPublicStatus', data)
+
+    # everything was ok
+    if r['code'] == 0:
+        return r['data']['publicStatus']
+
+    # Otherwise
+    return r
