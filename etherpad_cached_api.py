@@ -120,3 +120,20 @@ def setPublicStatus(padID, publicStatus):
 
     # Otherwise
     return r
+
+# creates a new session. validUntil is an unix timestamp in seconds 
+# TODO caching
+def createSession(groupId, authorId, validUntil):
+    data = { 'groupID' : groupId, 'authorID' : authorId,
+            'validUntil' : validUntil }
+
+    r = requestHandler('createSession', data)
+
+    # everything was ok
+    if r['code'] == 0:
+        return r['data']['sessionID']
+
+    # Otherwise
+    return ""
+
+

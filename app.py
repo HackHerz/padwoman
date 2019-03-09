@@ -1,8 +1,9 @@
 from flask import render_template
-from flask import request, redirect, url_for
+from flask import request, redirect, url_for, make_response
 from flask import Flask
 import flask_login
 from flask_restful import Resource, Api, reqparse
+from datetime import timedelta
 
 # Own stuff
 import userclass
@@ -109,10 +110,19 @@ def index():
 
 
     # Doing all the etherpadMagic
+    etherPadAuthor = createAuthorIfNotExistsFor(flask_login.current_user.id, "") # FIXME
+    validUntil = int((datetime.now() + timedelta(days=1)).timestamp())
+
     etherPadGroupIds = {}
+    etherPadSessions = []
+
     for g in viewableGroups:
         etherPadGroupIds[g] = createGroupIfNotExistsFor(g)
-        # TODO: cookies setzen für user
+        
+        # sessions for the user
+        etherPadSessions.append(createSession(etherPadGroupIds[g],
+            etherPadAuthor, validUntil))
+
 
     # Gathering information on the relevant pads for this group
     etherCurrGroup = etherPadGroupIds[active_group]
@@ -124,11 +134,19 @@ def index():
             'date' : getLastEdited(p),
             'public' : getPublicStatus(p) })
 
- 
-    return render_template('main.html', pads=padlist, groups=viewableGroups,
-            active_group=active_group, 
-            group_has_template=settings.groupHasTemplate(active_group),
-            groupExistsAndAllowed=groupExistsAndAllowed)
+    # Rendering the View
+    response = make_response(render_template('main.html',
+        pads=padlist, groups=viewableGroups, active_group=active_group, 
+        group_has_template=settings.groupHasTemplate(active_group),
+        groupExistsAndAllowed=groupExistsAndAllowed))
+
+    # Building the user cookie
+    sessionstring = '%2c'.join(etherPadSessions)
+    response.set_cookie('sessionID', sessionstring, expires=validUntil) 
+
+    return response
+
+
 
 
 # Api for the javascript ui
