@@ -48,10 +48,29 @@ document.getElementById('modalButton').addEventListener('click', () => {
 });
 
 
+/*
+ * visibility toggle stuff
+ */
+function padVisibility(pad, newStatus) {
+
+	request = new XMLHttpRequest();
+	request.open("GET",
+		'/uapi/PadVisibility/' + pad + '/' + newStatus);
+
+	request.addEventListener('load', function(event) {
+		location.reload(); 
+	});
+
+	request.send();
+}
+
+
 
 // Navbar
 document.addEventListener('DOMContentLoaded', () => {
-
+	/*
+	 * Navbar Stuff
+	 */
 	// Get all "navbar-burger" elements
 	const $navbarBurgers = Array.prototype.slice.call(
 		document.querySelectorAll('.navbar-burger'), 0);
@@ -75,5 +94,4 @@ document.addEventListener('DOMContentLoaded', () => {
 			});
 		});
 	}
-
 });

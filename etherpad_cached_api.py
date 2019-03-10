@@ -99,6 +99,7 @@ def getLastEdited(padId):
 
 # returns if the pad is public
 def getPublicStatus(padId):
+    
     data = { 'padID' : padId }
     r = requestHandler('getPublicStatus', data)
 
@@ -111,12 +112,14 @@ def getPublicStatus(padId):
 
 # set the public status of a pad
 def setPublicStatus(padID, publicStatus):
-    data = { 'padID' : padID, 'publicStatus' : publicStatus }
+    data = { 'padID' : padID,
+            'publicStatus' : "true" if publicStatus else "false" }
+
     r = requestHandler('setPublicStatus', data)
 
     # everything was ok
     if r['code'] == 0:
-        return r['data']['publicStatus']
+        return r['data']
 
     # Otherwise
     return r

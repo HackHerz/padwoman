@@ -130,6 +130,7 @@ def index():
     padlist = []
     for p in listPads(etherCurrGroup):
         padlist.append({ 'title' : humanPadName(p),
+            'id' : p,
             'url' : settings.data['pad']['url'] + p,
             'date' : getLastEdited(p),
             'public' : getPublicStatus(p) })
