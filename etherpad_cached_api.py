@@ -28,7 +28,7 @@ def createGroupPad(groupID, padName):
 
 
 # this functions helps you to map your application author ids to etherpad lite author ids 
-def createAuthorIfNotExistsFor(uid, cn):
+def createAuthorIfNotExistsFor(uid, name):
     redisKey = 'author:' + uid
     rVal = red.get(redisKey)
 
@@ -36,7 +36,7 @@ def createAuthorIfNotExistsFor(uid, cn):
     if rVal != None:
         return rVal
 
-    data = { 'authorMapper' : uid }
+    data = { 'authorMapper' : uid, 'name' : name }
     r = requestHandler('createAuthorIfNotExistsFor', data)
 
     # everything was ok

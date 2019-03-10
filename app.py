@@ -34,6 +34,8 @@ def user_loader(uid):
     user = userclass.User()
     user.id = uid
     user.groups = ldaphandler.getGroups(user.id)
+    user.cn = ldaphandler.getCn(uid)
+
     return user
 
 
@@ -110,7 +112,9 @@ def index():
 
 
     # Doing all the etherpadMagic
-    etherPadAuthor = createAuthorIfNotExistsFor(flask_login.current_user.id, "") # FIXME
+    etherPadAuthor = createAuthorIfNotExistsFor(flask_login.current_user.id,
+            flask_login.current_user.cn)
+
     validUntil = int((datetime.now() + timedelta(days=1)).timestamp())
 
     etherPadGroupIds = {}

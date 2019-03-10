@@ -79,3 +79,26 @@ def verifyPw(username, password):
         return False
 
     return True
+
+
+# get the name from ldap
+def getCn(uid):
+    # Check if username is empty
+    if uid == "":
+        return False
+
+    # first get the cn
+    try:
+        query = settings.data['ldap']['userfilter'] % uid
+        ldap_user = connect.search_s(settings.data['ldap']['usertree'], 
+                ldap.SCOPE_SUBTREE, query, ['cn'])
+    except ldap.SERVER_DOWN:
+        print("exception")
+        # ldapConnect()
+
+
+    # User does not exist
+    if len(ldap_user) == 0:
+        return "Britzel"
+
+    return ldap_user[0][1]['cn'][0]
