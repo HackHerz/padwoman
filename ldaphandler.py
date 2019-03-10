@@ -8,6 +8,8 @@ connect.set_option(ldap.OPT_REFERRALS, 0)
 
 # Establish ldap connection
 def ldapConnect():
+    connect = ldap.initialize(settings.data['ldap']['server'])
+    connect.set_option(ldap.OPT_REFERRALS, 0)
     connect.simple_bind_s(settings.data['ldap']['binddn'],
             settings.data['ldap']['bindpw'])
 
