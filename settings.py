@@ -1,4 +1,4 @@
-import yaml
+import oyaml as yaml
 
 # Open Config file
 stream = open('settings.yml', 'r')
