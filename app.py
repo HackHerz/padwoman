@@ -135,9 +135,12 @@ def index():
             'date' : getLastEdited(p),
             'public' : getPublicStatus(p) })
 
+    # Sorting the pads descending by last edited
+    sortedList = sorted(padlist, key=lambda x : x['date'], reverse=True)
+
     # Rendering the View
     response = make_response(render_template('main.html',
-        pads=padlist, groups=viewableGroups, active_group=active_group, 
+        pads=sortedList, groups=viewableGroups, active_group=active_group, 
         group_has_template=settings.groupHasTemplate(active_group),
         groupExistsAndAllowed=groupExistsAndAllowed))
 
