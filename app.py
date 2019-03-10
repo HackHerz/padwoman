@@ -8,7 +8,7 @@ from datetime import timedelta
 # Own stuff
 import userclass
 import settings
-import ldaphandler
+from ldaphandler import LdapHandler
 import microapi
 from etherpad_cached_api import *
 from _version import __version__
@@ -27,14 +27,16 @@ login_manager.login_view = "login"
 
 @login_manager.user_loader
 def user_loader(uid):
+    ldapObject = LdapHandler()
+
     # User does not exist
-    if ldaphandler.getDn(uid) == False:
+    if ldapObject.getDn(uid) == False:
         return
 
     user = userclass.User()
     user.id = uid
-    user.groups = ldaphandler.getGroups(user.id)
-    user.cn = ldaphandler.getCn(uid)
+    user.groups = ldapObject.getGroups(user.id)
+    user.cn = ldapObject.getCn(uid)
 
     return user
 
@@ -63,8 +65,10 @@ def login():
     if 'username' in request.form.keys() and 'password' in request.form.keys():
         username = request.form['username']
 
+        ldapObject = LdapHandler()
+
         # redirect to index if credentials are correct
-        if ldaphandler.verifyPw(username, request.form['password']):
+        if ldapObject.verifyPw(username, request.form['password']):
 
             user = userclass.User()
             user.id = username

@@ -3,102 +3,86 @@ import ldap
 # own stuff
 import settings
 
-connect = ldap.initialize(settings.data['ldap']['server'])
-connect.set_option(ldap.OPT_REFERRALS, 0)
 
-# Establish ldap connection
-def ldapConnect():
-    connect = ldap.initialize(settings.data['ldap']['server'])
-    connect.set_option(ldap.OPT_REFERRALS, 0)
-    connect.simple_bind_s(settings.data['ldap']['binddn'],
-            settings.data['ldap']['bindpw'])
+class LdapHandler:
 
-# bind to ldap
-ldapConnect()
+    # establish the connection
+    def __init__(self):
+        self.connect = ldap.initialize(settings.data['ldap']['server'])
+        self.connect.set_option(ldap.OPT_REFERRALS, 0)
 
-# get dn of a user
-def getDn(uid):
-    # Check if username is empty
-    if uid == "":
-        return False
+        self.connect.simple_bind_s(settings.data['ldap']['binddn'],
+                settings.data['ldap']['bindpw'])
 
-    # first get the cn
-    try:
+
+    # get dn of a user
+    def getDn(self, uid):
+        # Check if username is empty
+        if uid == "":
+            return False
+
+        # first get the cn
         query = settings.data['ldap']['userfilter'] % uid
-        ldap_user = connect.search_s(settings.data['ldap']['usertree'], 
+        ldap_user = self.connect.search_s(settings.data['ldap']['usertree'], 
                 ldap.SCOPE_SUBTREE, query, ['cn'])
-    except ldap.SERVER_DOWN:
-        print("exception")
-        ldapConnect()
+
+        # User does not exist
+        if len(ldap_user) == 0:
+            return False
+
+        return ldap_user[0][0]
 
 
-    # User does not exist
-    if len(ldap_user) == 0:
-        return False
+    # get groups of a user
+    def getGroups(self, uid):
 
-    return ldap_user[0][0]
+        if uid == "":
+            return []
 
-
-# get groups of a user
-def getGroups(uid):
-
-    if uid == "":
-        return []
-
-    try:
         query = settings.data['ldap']['groupfilter'] % uid
-        ldap_groups = connect.search_s(settings.data['ldap']['grouptree'],
+        ldap_groups = self.connect.search_s(settings.data['ldap']['grouptree'],
                 ldap.SCOPE_SUBTREE, query, ['cn'])
 
-    except ldap.SERVER_DOWN:
-        print("exception")
-        ldapConnect()
+        # Filter the relevant stuff
+        buf = []
+        for g in ldap_groups:
+            buf.append(g[1]['cn'][0].decode('utf-8'))
 
-    # Filter the relevant stuff
-    buf = []
-    for g in ldap_groups:
-        buf.append(g[1]['cn'][0].decode('utf-8'))
-
-    return buf
+        return buf
 
 
-# Verifying login
-def verifyPw(username, password):
-    dn_user = getDn(username)
+    # Verifying login
+    def verifyPw(self, username, password):
+        dn_user = self.getDn(username)
 
-    if dn_user == False:
-        return False
+        if dn_user == False:
+            return False
 
-    # Check PW
-    try:
-        pw_test = ldap.initialize(settings.data['ldap']['server'])
-        pw_test.bind_s(dn_user, password)
-        pw_test.unbind_s()
+        # Check PW
+        try:
+            pw_test = ldap.initialize(settings.data['ldap']['server'])
+            pw_test.bind_s(dn_user, password)
+            pw_test.unbind_s()
 
-    except ldap.LDAPError:
-        return False
+        except ldap.LDAPError:
+            return False
 
-    return True
+        return True
 
 
-# get the name from ldap
-def getCn(uid):
-    # Check if username is empty
-    if uid == "":
-        return False
+    # get the name from ldap
+    def getCn(self, uid):
+        # Check if username is empty
+        if uid == "":
+            return False
 
-    # first get the cn
-    try:
+        # first get the cn
         query = settings.data['ldap']['userfilter'] % uid
-        ldap_user = connect.search_s(settings.data['ldap']['usertree'], 
+        ldap_user = self.connect.search_s(settings.data['ldap']['usertree'], 
                 ldap.SCOPE_SUBTREE, query, ['cn'])
-    except ldap.SERVER_DOWN:
-        print("exception")
-        # ldapConnect()
 
+        # User does not exist
+        if len(ldap_user) == 0:
+            return "Britzel"
 
-    # User does not exist
-    if len(ldap_user) == 0:
-        return "Britzel"
-
-    return ldap_user[0][1]['cn'][0]
+        return ldap_user[0][1]['cn'][0]
