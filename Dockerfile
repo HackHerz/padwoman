@@ -6,8 +6,10 @@ RUN apk add --no-cache gcc libc-dev openldap-dev
 
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install gunicorn
+
+RUN apk add --no-cache linux-headers
+RUN pip install uwsgi
 
 COPY . .
 
-CMD ["gunicorn", "-b", "0.0.0.0:8000", "wsgi"]
+CMD ["uwsgi", "--http", "0.0.0.0:8000", "--plugin", "python3", "--wsgi-file", "wsgi.py", "--master", "--processes", "4", "--threads", "2"]
