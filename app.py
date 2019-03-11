@@ -133,15 +133,15 @@ def index():
 
 
     # Gathering information on the relevant pads for this group
-    etherCurrGroup = etherPadGroupIds[active_group]
-
     padlist = []
-    for p in listPads(etherCurrGroup):
-        padlist.append({ 'title' : humanPadName(p),
-            'id' : p,
-            'url' : settings.data['pad']['url'] + p,
-            'date' : getLastEdited(p),
-            'public' : getPublicStatus(p) })
+
+    if groupExistsAndAllowed:
+        for p in listPads(etherPadGroupIds[active_group]):
+            padlist.append({ 'title' : humanPadName(p),
+                'id' : p,
+                'url' : settings.data['pad']['url'] + p,
+                'date' : getLastEdited(p),
+                'public' : getPublicStatus(p) })
 
     # Sorting the pads descending by last edited
     sortedList = sorted(padlist, key=lambda x : x['date'], reverse=True)
