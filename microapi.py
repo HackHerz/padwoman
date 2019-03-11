@@ -10,9 +10,7 @@ class CreatePad(Resource):
     def get(self, padName, group):
         ethGid = createGroupIfNotExistsFor(group)
 
-        createGroupPad(ethGid, padName)
-
-        return { 'code' : 0, 'message' : 'ok' }
+        return createGroupPad(ethGid, padName)
 
 
 # Set visibility of pad

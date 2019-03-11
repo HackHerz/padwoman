@@ -26,6 +26,8 @@ def createGroupPad(groupID, padName):
 
     r = requestHandler('createGroupPad', data)
 
+    return r
+
 
 # this functions helps you to map your application author ids to etherpad lite author ids 
 def createAuthorIfNotExistsFor(uid, name):
@@ -117,11 +119,6 @@ def setPublicStatus(padID, publicStatus):
 
     r = requestHandler('setPublicStatus', data)
 
-    # everything was ok
-    if r['code'] == 0:
-        return r['data']
-
-    # Otherwise
     return r
 
 # creates a new session. validUntil is an unix timestamp in seconds 

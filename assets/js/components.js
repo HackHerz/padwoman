@@ -23,6 +23,9 @@ document.getElementById('createModalClose').addEventListener('click', () => {
 document.getElementById('modalButton').addEventListener('click', () => {
 	var modalInput = document.getElementById('modalTextfield');
 	var modalButton = document.getElementById('modalButton');
+	var modalError = document.getElementById('modalError');
+
+	modalError.innerHTML = "";
 
 	// Check if there is a name for the new pad
 	if(modalInput.value === "") {
@@ -34,15 +37,24 @@ document.getElementById('modalButton').addEventListener('click', () => {
 		var newPadName = document.getElementById('modalTextfield').value;
 
 		// Mach mal response
-		// fail -> add class X
-		// success -> add haken und lade seite neu
 		request = new XMLHttpRequest();
-		request.open("GET", '/uapi/CreatePad/' + currGroup + '/' + newPadName); // FIXME
 		
-		request.addEventListener('load', function(event) {
-			console.log("Antwort");
-			location.reload(); 
-		});
+		request.onreadystatechange = function() {
+			if(this.readyState == 4 && this.status == 200) {
+				modalButton.classList.remove('is-loading');
+
+				response = JSON.parse(request.responseText);
+
+				// success
+				if(response.code == 0) { // Success
+					location.reload(); 
+				} else { // failure in pad creation
+					modalError.innerHTML = response.message	
+				}
+			}
+		};
+
+		request.open("GET", '/uapi/CreatePad/' + currGroup + '/' + newPadName, true);
 		request.send();
 	}
 });
