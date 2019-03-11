@@ -15,7 +15,7 @@
 					<div class="field-body">
 						<div class="field">
 							<div class="control">
-								<input class="input" id="modalTextfield" type="text" placeholder="Total wichtige Dinge" value="{{ new_pad_name }}">
+								<input class="input" id="modalTextfield" type="text" placeholder="Total wichtige Dinge" value="{{ new_pad_name }}" {% if nameSuggestionMandatory %}disabled{% endif %}>
 							</div>
 
 						<p class="help is-danger" id="modalError"></p>
@@ -35,11 +35,11 @@
 						<div class="field is-narrow">
 							<div class="control">
 								<label class="radio">
-									<input type="radio" name="member" checked>
+									<input type="radio" name="member" checked {% if template_mandatory %}disabled{% endif %}>
 									Yes
 								</label>
 								<label class="radio">
-									<input type="radio" name="member">
+									<input type="radio" name="member" {% if template_mandatory %}disabled{% endif %}>
 									No
 								</label>
 							</div>

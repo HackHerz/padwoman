@@ -1,8 +1,16 @@
 import oyaml as yaml
+from datetime import datetime
+from jinja2 import Template
 
 # Open Config file
 stream = open('settings.yml', 'r')
 data = yaml.load(stream)
+
+# make groups more accessible
+groupDict = {}
+for g in data['padgroups']:
+    values = data['padgroups'][g]
+    groupDict[values['name']] = values
 
 
 # Returns the allowed padgroups for uid and ldapgroups
@@ -34,7 +42,6 @@ def getPadGroups(uid, groupids):
     return buf
 
 
-
 def getSecretKey():
     key = data['default']['secretkey'] # FIXME
     return key
@@ -44,12 +51,70 @@ def getDefaultGroup(uid, groupids):
     return getPadGroups(uid, groupids)[0]
 
 
-# Check if the group has a template
-def groupHasTemplate(groupid):
-    for g in data['padgroups']:
-        groupData = data['padgroups'][g]
+# check if the group has a name suggestion
+def groupHasPadnameSuggestion(group):
+    if group not in groupDict.keys():
+        return False
 
-        if groupData['name'] == groupid and "content" in groupData.keys():
-            return True
+    return "padname" in groupDict[group].keys()
+
+
+# check if the group name suggestion is mandatory
+def groupPadnameSuggestionMandatory(group):
+    # Mandatory is irrelevant if there is no name suggestion
+    if not groupHasPadnameSuggestion(group):
+        return False
+
+    # if key exists check the value
+    if "padnameismandatory" in groupDict[group].keys():
+        return groupDict[group]['padnameismandatory']
 
     return False
+
+
+# check if the group has a template
+def groupHasTemplate(group):
+    if group not in groupDict.keys():
+        return False
+
+    return "content" in groupDict[group].keys()
+
+
+# check if the group template is mandatory
+def groupTemplateMandatory(group):
+    if groupHasTemplate(group):
+        if "contentismandatory" in groupDict[group].keys():
+            return groupDict[group]['contentismandatory']
+
+    return False
+
+
+# Helper
+def render(template):
+    t = Template(template)
+
+    tDate = datetime.now().strftime('%Y-%m-%d')
+    tTime = datetime.now().strftime('%H:%M')
+    tDatetime = tDate + ' ' + tTime
+
+    return t.render(date=tDate, time=tTime, datetime=tDatetime)
+
+
+# render group template
+def getGroupTemplate(group):
+    if not groupHasTemplate:
+        return None
+    
+    body = render(groupDict[group]['content'])
+    return "<!DOCTYPE HTML><html><body>%s</body></html>" % body
+
+
+# render group name
+def getGroupPadname(group):
+    if not groupHasPadnameSuggestion:
+        return None
+    
+    name = render(groupDict[group]['padname'])
+    return name.replace(' ', '_')
+
+

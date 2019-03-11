@@ -150,6 +150,9 @@ def index():
     response = make_response(render_template('main.html',
         pads=sortedList, groups=viewableGroups, active_group=active_group, 
         group_has_template=settings.groupHasTemplate(active_group),
+        nameSuggestionMandatory=settings.groupPadnameSuggestionMandatory(active_group),
+        new_pad_name=settings.getGroupPadname(active_group),
+        template_mandatory=settings.groupTemplateMandatory(active_group),
         groupExistsAndAllowed=groupExistsAndAllowed))
 
     # Building the user cookie
