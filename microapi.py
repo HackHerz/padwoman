@@ -1,4 +1,5 @@
 from flask_restful import Resource
+import flask_login
 
 # own stuff
 from etherpad_cached_api import *
@@ -7,6 +8,7 @@ from etherpad_cached_api import *
 
 # Creating a new Pad in the corresponding group
 class CreatePad(Resource):
+    @flask_login.login_required
     def get(self, padName, group):
         ethGid = createGroupIfNotExistsFor(group)
 
@@ -15,6 +17,7 @@ class CreatePad(Resource):
 
 # Set visibility of pad
 class PadVisibility(Resource):
+    @flask_login.login_required
     def get(self, padName, visibility):
         v = None
 
