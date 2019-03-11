@@ -1,5 +1,6 @@
 from flask_restful import Resource
 import flask_login
+import re
 
 # own stuff
 from etherpad_cached_api import *
@@ -12,6 +13,16 @@ class CreatePad(Resource):
     @flask_login.login_required
     def get(self, padName, group):
         ethGid = createGroupIfNotExistsFor(group)
+
+        # Remove whitespaces on beginning and end
+        padName = padName.strip()
+
+        # Padname has at least 3 characters
+        if len(padName) < 3:
+            return { 'code' : 7, 'message' : 'Mach den Namen mal laenger' }
+
+        if not bool(re.match('[a-zA-z]{1,}', padName)):
+            return { 'code' : 6, 'message' : 'Fick dich' }
 
         return createGroupPad(ethGid, padName)
 

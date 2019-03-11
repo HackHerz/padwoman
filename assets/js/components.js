@@ -38,7 +38,7 @@ document.getElementById('modalButton').addEventListener('click', () => {
 
 
 	// Check if there is a name for the new pad
-	if(modalInput.value === "") {
+	if(modalInput.value.trim() === "") {
 		modalInput.classList.add('is-danger');
 	} else {
 		modalButton.classList.add('is-loading');
