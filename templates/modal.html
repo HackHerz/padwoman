@@ -15,7 +15,7 @@
 					<div class="field-body">
 						<div class="field">
 							<div class="control">
-								<input class="input" id="modalTextfield" type="text" placeholder="Total wichtige Dinge" value="{{ new_pad_name }}" {% if nameSuggestionMandatory %}disabled{% endif %}>
+								<input class="input" data-padname="{{ new_pad_name }}" id="modalTextfield" type="text" placeholder="Total wichtige Dinge" value="{{ new_pad_name }}" {% if nameSuggestionMandatory %}disabled{% endif %}>
 							</div>
 
 						<p class="help is-danger" id="modalError"></p>

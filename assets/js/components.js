@@ -44,7 +44,7 @@ document.getElementById('modalButton').addEventListener('click', () => {
 		modalButton.classList.add('is-loading');
 
 		var currGroup = document.getElementById('currentGroup').value;
-		var newPadName = document.getElementById('modalTextfield').value;
+		var newPadName = modalInput.value;
 
 		// Mach mal response
 		request = new XMLHttpRequest();
@@ -57,6 +57,7 @@ document.getElementById('modalButton').addEventListener('click', () => {
 
 				// success
 				if(response.code == 0) { // Success
+					modalInput.value = modalInput.getAttribute('data-padname');
 					location.reload(); 
 				} else { // failure in pad creation
 					modalError.innerHTML = response.message	
