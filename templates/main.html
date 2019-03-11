@@ -68,7 +68,7 @@
 						<tbody>
 							{% for pad in pads %}
 							<tr>
-								<td><a name="visibilityToggle" onclick="padVisibility('{{ pad.id }}', {% if pad.public %}'private'{% else %}'public'{% endif %})"
+								<td><a name="visibilityToggle" onclick="padVisibility('{{ pad.id | urlencode }}', {% if pad.public %}'private'{% else %}'public'{% endif %})"
 										title="make this pad {%if pad.public %}private{% else %}public{% endif %}">
 										<span class="icon">{% if pad.public %}<i class="fas fa-globe-americas">{% else %}<i class="fas fa-home">{% endif %}</i></span></a></td>
 								<td><a href="{{ pad.url }}">{{ pad.title }}</a></td>
