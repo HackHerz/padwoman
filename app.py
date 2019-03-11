@@ -168,6 +168,9 @@ def index():
 api.add_resource(microapi.CreatePad,
         '/uapi/CreatePad/<string:group>/<string:padName>')
 
+api.add_resource(microapi.CreateContentPad,
+        '/uapi/CreateContentPad/<string:group>/<string:padName>')
+
 api.add_resource(microapi.PadVisibility,
         '/uapi/PadVisibility/<string:padName>/<string:visibility>')
 

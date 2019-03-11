@@ -111,8 +111,8 @@ def getGroupTemplate(group):
 
 # render group name
 def getGroupPadname(group):
-    if not groupHasPadnameSuggestion:
-        return None
+    if not groupHasPadnameSuggestion(group):
+        return ""
     
     name = render(groupDict[group]['padname'])
     return name.replace(' ', '_')

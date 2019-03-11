@@ -3,6 +3,7 @@ import flask_login
 
 # own stuff
 from etherpad_cached_api import *
+import settings
 
 
 
@@ -13,6 +14,20 @@ class CreatePad(Resource):
         ethGid = createGroupIfNotExistsFor(group)
 
         return createGroupPad(ethGid, padName)
+
+
+# Creating a pad with content
+class CreateContentPad(CreatePad):
+    @flask_login.login_required
+    def get(self, padName, group):
+        response = CreatePad.get(self, padName, group)
+
+        # Pad Creation was a success, now content
+        if response['code'] == 0:
+            return setHtml(response['data']['padID'],
+                    settings.getGroupTemplate(group))
+
+        return response
 
 
 # Set visibility of pad

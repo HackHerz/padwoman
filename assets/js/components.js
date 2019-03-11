@@ -26,6 +26,16 @@ document.getElementById('modalButton').addEventListener('click', () => {
 	var modalError = document.getElementById('modalError');
 
 	modalError.innerHTML = "";
+	var fillPadWithContent = false;
+
+	// check if there are radiobuttons
+	// check if they are true
+	rButton = document.getElementById('newPadSetContent');
+
+	if(rButton != null) {
+		fillPadWithContent = rButton.checked;
+	}
+
 
 	// Check if there is a name for the new pad
 	if(modalInput.value === "") {
@@ -54,7 +64,11 @@ document.getElementById('modalButton').addEventListener('click', () => {
 			}
 		};
 
-		request.open("GET", '/uapi/CreatePad/' + currGroup + '/' + newPadName, true);
+		if(fillPadWithContent) { // set content
+			request.open("GET", '/uapi/CreateContentPad/' + currGroup + '/' + newPadName, true);
+		} else { // dont set content
+			request.open("GET", '/uapi/CreatePad/' + currGroup + '/' + newPadName, true);
+		}
 		request.send();
 	}
 });
