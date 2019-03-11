@@ -137,3 +137,9 @@ def createSession(groupId, authorId, validUntil):
     return ""
 
 
+def setHtml(padId, html):
+    data = { 'padID' : padId, 'html' : html }
+    r = requestHandler('setHTML', data)
+
+    return r
+
