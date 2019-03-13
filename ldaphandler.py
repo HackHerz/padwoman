@@ -1,7 +1,13 @@
+from ldappool import ConnectionManager
 import ldap
 
 # own stuff
 import settings
+
+# Connection Manager
+cm = ConnectionManager(settings.data['ldap']['server'],
+        settings.data['ldap']['binddn'], settings.data['ldap']['bindpw'])
+
 
 
 class LdapHandler:
@@ -9,6 +15,7 @@ class LdapHandler:
     def __init__(self, uid):
         self.userdata = None
         self.uid = uid
+        self.redisKey = "ldap:uid:%s" % uid
 
 
     # get the userdata
@@ -19,40 +26,30 @@ class LdapHandler:
         self.userdata = {}
 
         # connection to the server
-        self.connect = ldap.initialize(settings.data['ldap']['server'])
-        self.connect.set_option(ldap.OPT_REFERRALS, 0)
+        with cm.connection() as conn:
+            # first get the cn
+            userquery = settings.data['ldap']['userfilter'] % self.uid
+            ldap_user = conn.search_s(settings.data['ldap']['usertree'], 
+                    ldap.SCOPE_SUBTREE, userquery, ['cn'])
 
-        # bind
-        self.connect.simple_bind_s(settings.data['ldap']['binddn'],
-                settings.data['ldap']['bindpw'])
+            # User does not exist
+            if len(ldap_user) == 0:
+                self.userdata = None
+                return
 
-        # first get the cn
-        userquery = settings.data['ldap']['userfilter'] % self.uid
-        ldap_user = self.connect.search_s(settings.data['ldap']['usertree'], 
-                ldap.SCOPE_SUBTREE, userquery, ['cn'])
+            # save values
+            self.userdata['dn'] = ldap_user[0][0]
+            self.userdata['cn'] = ldap_user[0][1]['cn'][0]
 
-        # User does not exist
-        if len(ldap_user) == 0:
-            self.userdata = None
-            self.connect.unbind_s()
-            return
+            # get the groups
+            groupquery = settings.data['ldap']['groupfilter'] % self.uid
+            ldap_groups = conn.search_s(settings.data['ldap']['grouptree'],
+                    ldap.SCOPE_SUBTREE, groupquery, ['cn'])
 
-        # save values
-        self.userdata['dn'] = ldap_user[0][0]
-        self.userdata['cn'] = ldap_user[0][1]['cn'][0]
-
-        # get the groups
-        groupquery = settings.data['ldap']['groupfilter'] % self.uid
-        ldap_groups = self.connect.search_s(settings.data['ldap']['grouptree'],
-                ldap.SCOPE_SUBTREE, groupquery, ['cn'])
-
-        # Filter the relevant stuff
-        self.userdata['groups'] = []
-        for g in ldap_groups:
-            self.userdata['groups'].append(g[1]['cn'][0])
-
-        # unbind
-        self.connect.unbind_s()
+            # Filter the relevant stuff
+            self.userdata['groups'] = []
+            for g in ldap_groups:
+                self.userdata['groups'].append(g[1]['cn'][0])
 
 
     # get dn of a user
@@ -79,7 +76,7 @@ class LdapHandler:
 
     # Verifying login
     def verifyPw(self, password):
-        # we need everythin fresh from ldap
+        # we need everything fresh from ldap
         self.userdata = None
 
         userDn = self.getDn()
@@ -89,11 +86,10 @@ class LdapHandler:
 
         # Check PW
         try:
-            pw_test = ldap.initialize(settings.data['ldap']['server'])
-            pw_test.bind_s(userDn, password)
-            pw_test.unbind_s()
+            with cm.connection(userDn, password) as conn:
+                pass
 
-        except ldap.LDAPError:
+        except ldap.INVALID_CREDENTIALS:
             return False
 
         return True

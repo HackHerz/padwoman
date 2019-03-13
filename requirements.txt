@@ -7,3 +7,4 @@ redis==3.2.0
 pyyaml==3.13
 oyaml==0.7
 requests==2.21.0
+ldappool==2.4.1
