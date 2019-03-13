@@ -171,7 +171,7 @@ def getPadlist(groupId):
         padsInGroup = listPads(groupId)
         red.set(redisKey, json.dumps(padsInGroup))
     else:
-        padsInGroup = json.loads(cacheVal)
+        padsInGroup = json.loads(cacheVal.decode('utf-8'))
         
     # gather information of these pads
     lastEditPipe = red.pipeline()
