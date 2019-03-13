@@ -2,6 +2,10 @@
 document.getElementById('newPad').addEventListener('click', () => {
 	var createModal = document.getElementById('createModal');
 	createModal.classList.toggle('is-active');
+
+	if(createModal.classList.contains('is-active')) {
+		document.getElementById('modalTextfield').focus();
+	}
 });
 
 
