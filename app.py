@@ -79,16 +79,6 @@ def login():
     return render_template('login.html', loginFailed=True)
 
 
-# returns the human friendly name of a pad
-def humanPadName(padId):
-    splat = padId.split('$', 1)
-
-    if len(splat) > 1:
-        return splat[1]
-
-    return padId
-
-
 # Logout
 @app.route('/logout')
 def logout():
@@ -133,15 +123,8 @@ def index():
 
 
     # Gathering information on the relevant pads for this group
-    padlist = []
-
-    if groupExistsAndAllowed:
-        for p in listPads(etherPadGroupIds[active_group]):
-            padlist.append({ 'title' : humanPadName(p),
-                'id' : p,
-                'url' : settings.data['pad']['url'] + p,
-                'date' : getLastEdited(p),
-                'public' : getPublicStatus(p) })
+    padlist = [] if not groupExistsAndAllowed else getPadlist(
+            etherPadGroupIds[active_group])
 
     # Sorting the pads descending by last edited
     sortedList = sorted(padlist, key=lambda x : x['date'], reverse=True)

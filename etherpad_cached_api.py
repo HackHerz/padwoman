@@ -143,3 +143,26 @@ def setHtml(padId, html):
 
     return r
 
+
+# returns the human friendly name of a pad
+def humanPadName(padId):
+    splat = padId.split('$', 1)
+
+    if len(splat) > 1:
+        return splat[1]
+
+    return padId
+
+
+# returns a list of all pads and their necessary values
+def getPadlist(groupId):
+    padlist = []
+    
+    for p in listPads(groupId):
+        padlist.append({ 'title' : humanPadName(p),
+            'id' : p,
+            'url' : settings.data['pad']['url'] + p,
+            'date' : getLastEdited(p),
+            'public' : getPublicStatus(p) })
+
+    return padlist
