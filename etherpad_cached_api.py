@@ -1,5 +1,6 @@
 import requests
 import redis
+import json
 from datetime import datetime
 
 # own stuff
@@ -20,8 +21,11 @@ def requestHandler(endpoint, data):
 
 # creates a new pad in this group 
 # TODO: invalidate certain caches
-def createGroupPad(groupID, padName):
-    data = { 'groupID' : groupID,
+def createGroupPad(groupId, padName):
+    # invalidate cache
+    red.delete("padlist:%s" % groupId)
+
+    data = { 'groupID' : groupId,
             'padName' : padName }
 
     r = requestHandler('createGroupPad', data)
@@ -156,9 +160,23 @@ def humanPadName(padId):
 
 # returns a list of all pads and their necessary values
 def getPadlist(groupId):
+    padsInGroup = []
+
+    # Check Cache for the list of pads
+    redisKey = "padlist:%s" % groupId
+    cacheVal = red.get(redisKey)
+
+    # Was not in cache
+    if cacheVal == None:
+        padsInGroup = listPads(groupId)
+        red.set(redisKey, json.dumps(padsInGroup))
+    else:
+        padsInGroup = json.loads(cacheVal)
+        
+    # gather information of these pads
     padlist = []
     
-    for p in listPads(groupId):
+    for p in padsInGroup:
         padlist.append({ 'title' : humanPadName(p),
             'id' : p,
             'url' : settings.data['pad']['url'] + p,
