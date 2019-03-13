@@ -21,7 +21,7 @@ class CreatePad(Resource):
         if len(padName) < 3:
             return { 'code' : 7, 'message' : 'Mach den Namen mal laenger' }
 
-        if not bool(re.match('[a-zA-z]{1,}', padName)):
+        if not bool(re.match('.*[a-zA-z]{1,}', padName)):
             return { 'code' : 6, 'message' : 'Fick dich' }
 
         return createGroupPad(ethGid, padName)
