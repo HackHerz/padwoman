@@ -27,16 +27,16 @@ login_manager.login_view = "login"
 
 @login_manager.user_loader
 def user_loader(uid):
-    ldapObject = LdapHandler()
+    ldapObject = LdapHandler(uid)
 
     # User does not exist
-    if ldapObject.getDn(uid) == False:
+    if ldapObject.getDn() == False:
         return
 
     user = userclass.User()
     user.id = uid
-    user.groups = ldapObject.getGroups(user.id)
-    user.cn = ldapObject.getCn(uid)
+    user.groups = ldapObject.getGroups()
+    user.cn = ldapObject.getCn()
 
     return user
 
@@ -65,10 +65,10 @@ def login():
     if 'username' in request.form.keys() and 'password' in request.form.keys():
         username = request.form['username']
 
-        ldapObject = LdapHandler()
+        ldapObject = LdapHandler(username)
 
         # redirect to index if credentials are correct
-        if ldapObject.verifyPw(username, request.form['password']):
+        if ldapObject.verifyPw(request.form['password']):
 
             user = userclass.User()
             user.id = username
