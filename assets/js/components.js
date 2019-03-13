@@ -62,6 +62,9 @@ function submitFunction(e) {
 				// success
 				if(response.code == 0) { // Success
 					modalInput.value = modalInput.getAttribute('data-padname');
+					modalError.classList.remove('is-danger');
+					modalError.classList.add('is-success');
+					modalError.innerHTML = "Success! Please wait...";
 					location.reload(); 
 				} else { // failure in pad creation
 					modalError.innerHTML = response.message	
