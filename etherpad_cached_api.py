@@ -115,10 +115,10 @@ def getPublicStatus(padId):
     return False
 
 # set the public status of a pad
-def setPublicStatus(padID, publicStatus):
+def setPublicStatus(padId, publicStatus):
     red.delete("pad:public:%s" % padId)
     
-    data = { 'padID' : padID,
+    data = { 'padID' : padId,
             'publicStatus' : "true" if publicStatus else "false" }
 
     r = requestHandler('setPublicStatus', data)
@@ -197,7 +197,7 @@ def getPadlist(groupId):
             cacheUpdate.set("pad:public:%s" % padsInGroup[i], str(pub))
             publicRespo[i] = pub
         else:
-            publicRespo[i] = bool(publicRespo) # convert from string to boolean
+            publicRespo[i] = bool(publicRespo == "True") # convert from string to boolean
 
         # Last edited value
         if lastEditResp[i] == None:
@@ -213,6 +213,8 @@ def getPadlist(groupId):
             'url' : settings.data['pad']['url'] + p,
             'date' : lastEditResp[i],
             'public' : publicRespo[i] })
+
+    print(publicRespo)
 
 
     # perform actual cache update
