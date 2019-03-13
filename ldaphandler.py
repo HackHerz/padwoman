@@ -1,5 +1,7 @@
 from ldappool import ConnectionManager
 import ldap
+import redis
+import json
 
 # own stuff
 import settings
@@ -8,6 +10,8 @@ import settings
 cm = ConnectionManager(settings.data['ldap']['server'],
         settings.data['ldap']['binddn'], settings.data['ldap']['bindpw'])
 
+# Redis
+red = redis.Redis(**settings.data['redis'])
 
 
 class LdapHandler:
@@ -18,12 +22,42 @@ class LdapHandler:
         self.redisKey = "ldap:uid:%s" % uid
 
 
+    # get userdata from cache if exists
+    def getCache(self):
+        if self.uid != "":
+            redisVal = red.get(self.redisKey)
+
+            if redisVal == None:
+                self.userdata = None
+                return
+
+            self.userdata = json.loads(redisVal)
+
+
+    # save data to the cache
+    def setCache(self):
+        if self.userdata != None:
+            red.set(self.redisKey, json.dumps(self.userdata))
+
+    
+    # used when the cache data is known to be irrelevant
+    def flushCache(self):
+        red.delete(self.redisKey)
+
     # get the userdata
     def getLdapInfo(self):
         if self.uid == None:
             return
 
+        # Check if data is in the cache
+        self.getCache()
+        if self.userdata != None:
+            return
+
+        # Proceed if data was not in cache
         self.userdata = {}
+
+        print("LDAP....")
 
         # connection to the server
         with cm.connection() as conn:
@@ -39,7 +73,7 @@ class LdapHandler:
 
             # save values
             self.userdata['dn'] = ldap_user[0][0]
-            self.userdata['cn'] = ldap_user[0][1]['cn'][0]
+            self.userdata['cn'] = ldap_user[0][1]['cn'][0].decode('utf-8')
 
             # get the groups
             groupquery = settings.data['ldap']['groupfilter'] % self.uid
@@ -49,7 +83,10 @@ class LdapHandler:
             # Filter the relevant stuff
             self.userdata['groups'] = []
             for g in ldap_groups:
-                self.userdata['groups'].append(g[1]['cn'][0])
+                self.userdata['groups'].append(g[1]['cn'][0].decode('utf-8'))
+
+        # Save data in cache
+        self.setCache()
 
 
     # get dn of a user
@@ -78,6 +115,7 @@ class LdapHandler:
     def verifyPw(self, password):
         # we need everything fresh from ldap
         self.userdata = None
+        self.flushCache()
 
         userDn = self.getDn()
 
@@ -88,6 +126,8 @@ class LdapHandler:
         try:
             with cm.connection(userDn, password) as conn:
                 pass
+
+            cm.purge(userDn, password) # Purge this connection from the pool
 
         except ldap.INVALID_CREDENTIALS:
             return False
