@@ -180,9 +180,8 @@ def calcExpTime(datum):
         return 3600
 
 
-
-# returns a list of all pads and their necessary values
-def getPadlist(groupId):
+# caching is fun
+def getPadsFromCache(groupId):
     padsInGroup = []
 
     # Check Cache for the list of pads
@@ -195,6 +194,13 @@ def getPadlist(groupId):
         red.set(redisKey, json.dumps(padsInGroup))
     else:
         padsInGroup = json.loads(cacheVal.decode('utf-8'))
+
+    return padsInGroup
+
+
+# returns a list of all pads and their necessary values
+def getPadlist(groupId):
+    padsInGroup = getPadsFromCache(groupId)
         
     # gather information of these pads
     lastEditPipe = red.pipeline()
