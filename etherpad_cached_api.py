@@ -20,7 +20,6 @@ def requestHandler(endpoint, data):
 
 
 # creates a new pad in this group 
-# TODO: invalidate certain caches
 def createGroupPad(groupId, padName):
     # invalidate cache
     red.delete("padlist:%s" % groupId)
@@ -105,7 +104,6 @@ def getLastEdited(padId):
 
 # returns if the pad is public
 def getPublicStatus(padId):
-    
     data = { 'padID' : padId }
     r = requestHandler('getPublicStatus', data)
 
@@ -118,6 +116,8 @@ def getPublicStatus(padId):
 
 # set the public status of a pad
 def setPublicStatus(padID, publicStatus):
+    red.delete("pad:public:%s" % padId)
+    
     data = { 'padID' : padID,
             'publicStatus' : "true" if publicStatus else "false" }
 
@@ -174,13 +174,48 @@ def getPadlist(groupId):
         padsInGroup = json.loads(cacheVal)
         
     # gather information of these pads
-    padlist = []
-    
+    lastEditPipe = red.pipeline()
+    publicPipe = red.pipeline()
+
+    # Load Values from Cache
     for p in padsInGroup:
+        lastEditPipe.get("pad:lastEdit:%s" % p)
+        publicPipe.get("pad:public:%s" % p)
+
+    # execute pipes
+    lastEditResp = lastEditPipe.execute()
+    publicRespo = publicPipe.execute()
+
+    cacheUpdate = red.pipeline()
+    padlist = []
+
+    # Check where values are missing
+    for i in range(0, len(padsInGroup)):
+        # Public Value
+        if publicRespo[i] == None:
+            pub = getPublicStatus(padsInGroup[i])
+            cacheUpdate.set("pad:public:%s" % padsInGroup[i], str(pub))
+            publicRespo[i] = pub
+        else:
+            publicRespo[i] = bool(publicRespo) # convert from string to boolean
+
+        # Last edited value
+        if lastEditResp[i] == None:
+            tm = getLastEdited(padsInGroup[i])
+            lastEditResp[i] = tm
+            cacheUpdate.set("pad:lastEdit:%s" % padsInGroup[i], tm, 30) # caching: 30s
+
+        # Current pad
+        p = padsInGroup[i]
+
         padlist.append({ 'title' : humanPadName(p),
             'id' : p,
             'url' : settings.data['pad']['url'] + p,
-            'date' : getLastEdited(p),
-            'public' : getPublicStatus(p) })
+            'date' : lastEditResp[i],
+            'public' : publicRespo[i] })
+
+
+    # perform actual cache update
+    cacheUpdate.execute()
 
     return padlist
