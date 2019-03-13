@@ -188,7 +188,7 @@ def getPadlist(groupId):
 
     cacheUpdate = red.pipeline()
     padlist = []
-
+    
     # Check where values are missing
     for i in range(0, len(padsInGroup)):
         # Public Value
@@ -197,13 +197,15 @@ def getPadlist(groupId):
             cacheUpdate.set("pad:public:%s" % padsInGroup[i], str(pub))
             publicRespo[i] = pub
         else:
-            publicRespo[i] = bool(publicRespo == "True") # convert from string to boolean
+            publicRespo[i] = bool(publicRespo[i].decode('utf-8') == "True") # convert from string to boolean
 
         # Last edited value
         if lastEditResp[i] == None:
             tm = getLastEdited(padsInGroup[i])
             lastEditResp[i] = tm
             cacheUpdate.set("pad:lastEdit:%s" % padsInGroup[i], tm, 30) # caching: 30s
+        else:
+            lastEditResp[i] = lastEditResp[i].decode('utf-8')
 
         # Current pad
         p = padsInGroup[i]
@@ -213,9 +215,6 @@ def getPadlist(groupId):
             'url' : settings.data['pad']['url'] + p,
             'date' : lastEditResp[i],
             'public' : publicRespo[i] })
-
-    print(publicRespo)
-
 
     # perform actual cache update
     cacheUpdate.execute()
