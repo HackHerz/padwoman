@@ -1,9 +1,11 @@
+from pytz import utc
 from flask import render_template
 from flask import request, redirect, url_for, make_response
 from flask import Flask
 import flask_login
 from flask_restful import Resource, Api, reqparse
 from datetime import timedelta
+from apscheduler.schedulers.background import BackgroundScheduler
 
 # Own stuff
 import userclass
@@ -12,6 +14,7 @@ from ldaphandler import LdapHandler
 import microapi
 from etherpad_cached_api import *
 from _version import __version__
+from clockwork import updateTimestamps
 
 
 # Flask
@@ -24,6 +27,14 @@ api = Api(app) # API wuhuuu
 login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
+
+# Job to reneew lastEdit timestamps in the cache
+sched = BackgroundScheduler(timezone=utc)
+sched.start()
+ 
+sched.add_job(updateTimestamps, 'interval', seconds=59)
+
+
 
 @login_manager.user_loader
 def user_loader(uid):
