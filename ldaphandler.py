@@ -31,7 +31,7 @@ class LdapHandler:
                 self.userdata = None
                 return
 
-            self.userdata = json.loads(redisVal)
+            self.userdata = json.loads(redisVal.decode('utf-8'))
 
 
     # save data to the cache
@@ -129,7 +129,7 @@ class LdapHandler:
 
             cm.purge(userDn, password) # Purge this connection from the pool
 
-        except ldap.INVALID_CREDENTIALS:
+        except ldap.LDAPError:
             return False
 
         return True
