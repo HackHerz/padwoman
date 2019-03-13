@@ -5,7 +5,7 @@
 			<p class="modal-card-title">Neues Pad <small>in {{ active_group }}</small></p>
 			<button class="delete" aria-label="close" id="createModalClose"></button>
 		</header>
-		<form id="modalForm">
+		<form id="modalForm" onsubmit="return submitFunction();">
 			<section class="modal-card-body">
 
 				<div class="field is-horizontal">
@@ -49,10 +49,9 @@
 				{% endif %}
 
 			</section>
+			<footer class="modal-card-foot" style="justify-content: flex-end;">
+				<button type="submit" class="button is-danger" id="modalButton">Create Pad</button>
+			</footer>
 		</form>
-		<footer class="modal-card-foot" style="justify-content: flex-end;">
-			<button class="button is-danger" id="modalButton">Create Pad</button>
-			<!--<button class="button">Cancel</button>-->
-		</footer>
 	</div>
 </div>

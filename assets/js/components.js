@@ -20,7 +20,7 @@ document.getElementById('createModalClose').addEventListener('click', () => {
 
 
 // Creating a new Pad
-document.getElementById('modalButton').addEventListener('click', () => {
+function submitFunction(e) {
 	var modalInput = document.getElementById('modalTextfield');
 	var modalButton = document.getElementById('modalButton');
 	var modalError = document.getElementById('modalError');
@@ -72,7 +72,9 @@ document.getElementById('modalButton').addEventListener('click', () => {
 		}
 		request.send();
 	}
-});
+
+	return false;
+}
 
 
 /*
