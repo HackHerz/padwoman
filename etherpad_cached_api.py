@@ -158,6 +158,29 @@ def humanPadName(padId):
     return padId
 
 
+# Calcualte the time before expiration
+def calcExpTime(datum):
+    if(len(datum) < 10):
+        return 60
+
+    year = int(datum[0:4])
+    month = int(datum[5:7])
+    day = int(datum[8:10])
+    
+    dStamp = datetime(year, month, day)
+    delta = datetime.now() - dStamp
+
+    value = delta.days * 20 # 20s per day
+
+    # Min and max values
+    if value < 60:
+        return 60
+
+    if value > 3600:
+        return 3600
+
+
+
 # returns a list of all pads and their necessary values
 def getPadlist(groupId):
     padsInGroup = []
@@ -203,7 +226,9 @@ def getPadlist(groupId):
         if lastEditResp[i] == None:
             tm = getLastEdited(padsInGroup[i])
             lastEditResp[i] = tm
-            cacheUpdate.set("pad:lastEdit:%s" % padsInGroup[i], tm, 30) # caching: 30s
+            cacheUpdate.set("pad:lastEdit:%s" % padsInGroup[i], tm,
+                    calcExpTime(tm))
+
         else:
             lastEditResp[i] = lastEditResp[i].decode('utf-8')
 
