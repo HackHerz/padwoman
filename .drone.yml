@@ -1,0 +1,14 @@
+kind: pipeline
+name: default
+
+steps:
+  - name: docker  
+    image: plugins/docker
+    settings:
+        repo: maxwell:5000/padwoman
+        registry: maxwell:5000
+        insecure: true
+        tags: latest
+    when:
+        branch:
+            - master
