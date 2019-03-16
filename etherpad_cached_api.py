@@ -179,6 +179,8 @@ def calcExpTime(datum):
     if value > 3600:
         return 3600
 
+    return value
+
 
 # caching is fun
 def getPadsFromCache(groupId):
