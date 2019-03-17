@@ -100,7 +100,7 @@ def getLastEdited(padId):
         return datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M')
 
     # Otherwise
-    return 0
+    return "0"
 
 # returns if the pad is public
 def getPublicStatus(padId):
