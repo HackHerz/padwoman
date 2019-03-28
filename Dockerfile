@@ -12,4 +12,4 @@ RUN pip install uwsgi
 
 COPY . .
 
-CMD ["uwsgi", "--http", "0.0.0.0:8000", "--plugin", "python", "--wsgi-file", "wsgi.py", "--master", "--processes", "4", "--threads", "2"]
+CMD ["uwsgi", "--http", "0.0.0.0:8000", "--wsgi-file", "wsgi.py", "--master", "--processes", "4", "--threads", "2", "--disable-logging"]

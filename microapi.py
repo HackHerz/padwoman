@@ -22,7 +22,7 @@ class CreatePad(Resource):
             return { 'code' : 7, 'message' : 'Mach den Namen mal laenger' }
 
         if not bool(re.match('.*[a-zA-z]{1,}', padName)):
-            return { 'code' : 6, 'message' : 'Fick dich' }
+            return { 'code' : 6, 'message' : 'Probiere es mal mit Buchstaben' }
 
         return createGroupPad(ethGid, padName)
 
