@@ -1,0 +1,21 @@
+site_name: Padwoman Documentation
+site_description: 'Documentation of Padwoman'
+site_author: 'Daniel Stein'
+
+repo_name: 'HackHerz/padwoman'
+repo_url: 'https://github.com/HackHerz/padwoman'
+
+theme:
+  name: 'material'
+  logo: 'images/logo.png'
+  favicon: 'images/favicon.ico'
+  palette:
+    primary: 'pink'
+    accent: 'pink'
+
+nav:
+  - index.md
+  - installation.md
+  - config.md
+  - changelog.md
+  - etherpad-tricks.md
