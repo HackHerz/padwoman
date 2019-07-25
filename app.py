@@ -3,13 +3,12 @@ from flask import render_template
 from flask import request, redirect, url_for, make_response
 from flask import Flask
 import flask_login
-from flask_restful import Resource, Api, reqparse
+from flask_restful import Api
 from datetime import timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 
 # Own stuff
 import userclass
-import settings
 from ldaphandler import LdapHandler
 import microapi
 from etherpad_cached_api import *
@@ -28,7 +27,7 @@ login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
 
-# Job to reneew lastEdit timestamps in the cache
+# Job to renew lastEdit timestamps in the cache
 sched = BackgroundScheduler(timezone=utc)
 sched.start()
 sched.add_job(updateTimestamps, 'interval', seconds=59)
@@ -177,4 +176,4 @@ api.add_resource(microapi.ExportLatex, '/uapi/ExportLatex/<string:padName>')
 
 # Run
 if __name__ == '__main__':
-     app.run(host='0.0.0.0', port='5000')
+     app.run(host=settings.data['default'].get('host', '0.0.0.0'), port=settings.data['default'].get('port', '5000'))

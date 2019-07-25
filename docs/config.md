@@ -88,7 +88,7 @@ The groups are listed below an unique identifier, which is only used in the conf
 
 If there are no users or groups specified everyone who can login is allowed to view that padgroup.
 
-**content** and **padname** have the following variables they can use ({{ vatiablename }}):
+**content** and **padname** have the following variables they can use ({{ variablename }}):
 
 - **date** the current date
 - **time** the current time
