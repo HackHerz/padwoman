@@ -1,10 +1,15 @@
 import flask_login
+from flask import render_template, redirect, url_for
 
 
 class AuthMechanism:
     @staticmethod
     def login():
         pass
+
+    @staticmethod
+    def logout():
+        return redirect(url_for("login"))
 
 
 class User(flask_login.UserMixin):

@@ -69,7 +69,7 @@ def login():
 @app.route('/logout')
 def logout():
     flask_login.logout_user()
-    return redirect(url_for("login"))
+    return AuthMechanism.logout()
 
 
 # Serving the actual site

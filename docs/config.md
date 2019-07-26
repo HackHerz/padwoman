@@ -42,6 +42,8 @@ auth:
     cn: Auth-Cn
     groups: Auth-Groups
     login-url: https://auth.example.com/?url=<redirect>
+    logout-url: https://auth.example.com/?url=<redirect>&logout=1
+    logout-cookies-delete: [ext-auth-cookie]
 
 padgroups:
   allgemein:
@@ -113,6 +115,8 @@ No configuration needed.
 - **cn** (optional) The HTTP header field name for the common name
 - **groups** (optional) The HTTP header field name for the groups, which are seperated by a `;`
 - **login-url** (optional) The URL where to redirect to for login. `<redirect>` will be replaced with the base64 encoded pad URL
+- **logout-url** (optional) The URL where to redirect to for logout. `<redirect>` will be replaced with the base64 encoded pad URL
+- **logout-cookies-delete** (optional) A list of cookies that are destroyed at logout
 
 Do not use this method unless you have properly set up a reverse proxy that handles the authentication!
 

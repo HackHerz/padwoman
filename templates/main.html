@@ -21,6 +21,10 @@
 							{% for group in groups %}
 							<a class="navbar-item{% if group == active_group %} is-active{% endif %}" href="?group={{ group }}">{{ group }}</a>
 							{% endfor %}
+							<a class="navbar-item" href="/logout">
+								<span class="icon"><i class="fas fa-sign-out-alt"></i></span>
+								<span>Logout</span>
+							</a>
 						</div>
 					</div>
 				</nav>
@@ -28,7 +32,19 @@
 
 		<section class="section">
 			<div class="container">
-				<h1 class="title is-1">{{ title }}</h1>
+				<nav class="level">
+					<div class="level-left">
+						<div class="level-item"><h1 class="title is-1">{{ title }}</h1></div>
+					</div>
+					<div class="level-right is-hidden-touch">
+						<div class="level-item">
+							<a class="button" href="/logout">
+								<span class="icon"><i class="fas fa-sign-out-alt"></i></span>
+								<span>Logout</span>
+							</a>
+						</div>
+					</div>
+				</nav>
 
 				<!-- for desktop -->
 				<div class="tabs is-hidden-touch">

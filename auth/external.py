@@ -1,7 +1,7 @@
 import auth.auth
 import settings
 from flask_login import login_user
-from flask import request, redirect, url_for, render_template
+from flask import request, redirect, url_for, render_template, make_response
 from base64 import b64encode
 
 
@@ -22,6 +22,18 @@ class AuthMechanism(auth.auth.AuthMechanism):
                 return redirect(login_url.replace('<redirect>', redirect_url))
             else:
                 return render_template('login.html', loginFailed=True)
+
+    @staticmethod
+    def logout():
+        if 'logout-url' in settings.data['auth']['external']:
+            logout_url = settings.data['auth']['external']['logout-url']
+            redirect_url = str(b64encode(url_for("login", _external=True).encode("utf-8")), "utf-8")
+            resp = make_response(redirect(logout_url.replace('<redirect>', redirect_url)))
+            for c in settings.data['auth']['external'].get('logout-cookies-delete', []):
+                resp.set_cookie(c, '', expires=0)
+            return resp
+        else:
+            return super(AuthMechanism, AuthMechanism).logout()
 
 
 class User(auth.auth.User):
