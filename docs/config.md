@@ -18,14 +18,16 @@ pad:
   apiurl: http://etherpad:9001/api/
   url: https://pads.tld/p/
 
-ldap:
-  server: ldap://ldapserver:389
-  usertree: ou=alluser,dc=blub,dc=de
-  grouptree: ou=groups,dc=blub,dc=de
-  userfilter: (&(uid=%s)(objectClass=posixAccount))
-  groupfilter: (&(objectClass=posixGroup)(memberUID=%s))
-  binddn: cn=www-data,dc=blub,dc=de
-  bindpw: bindpw
+auth:
+  method: ldap
+  ldap:
+    server: ldap://ldapserver:389
+    usertree: ou=alluser,dc=blub,dc=de
+    grouptree: ou=groups,dc=blub,dc=de
+    userfilter: (&(uid=%s)(objectClass=posixAccount))
+    groupfilter: (&(objectClass=posixGroup)(memberUID=%s))
+    binddn: cn=www-data,dc=blub,dc=de
+    bindpw: bindpw
 
 padgroups:
   allgemein:
@@ -67,8 +69,11 @@ You can use every argument which is specififed by the python redis library.
 - **url** the public url of your pads
 
 
-### ldap
+### auth
 
+- **method** must be one of the authentication modules in the auth/ folder
+
+#### ldap
 - **userfilter** expects a username (%s) as argument
 - **groupfilter** expects a username (%s) as argument
 

@@ -12,6 +12,11 @@ for g in data['padgroups']:
     values = data['padgroups'][g]
     groupDict[values['name']] = values
 
+# retain backwards compatibility with old configs
+if 'auth' not in data.keys():
+    data['auth'] = {'method': 'ldap'}
+    data['auth']['ldap'] = data['ldap']
+
 
 # Returns the allowed padgroups for uid and ldapgroups
 def getPadGroups(uid, groupids):

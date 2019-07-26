@@ -6,10 +6,9 @@ import flask_login
 from flask_restful import Api
 from datetime import timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
+from importlib import import_module
 
 # Own stuff
-import userclass
-from ldaphandler import LdapHandler
 import microapi
 from etherpad_cached_api import *
 from _version import __version__
@@ -27,6 +26,10 @@ login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
 
+# Load Authentication
+User = getattr(import_module('auth.' + settings.data['auth']['method']), 'User')
+AuthMechanism = getattr(import_module('auth.' + settings.data['auth']['method']), 'AuthMechanism')
+
 # Job to renew lastEdit timestamps in the cache
 sched = BackgroundScheduler(timezone=utc)
 sched.start()
@@ -35,16 +38,12 @@ sched.add_job(updateTimestamps, 'interval', seconds=59)
 
 @login_manager.user_loader
 def user_loader(uid):
-    ldapObject = LdapHandler(uid)
+    user = User(uid)
 
-    # User does not exist
-    if ldapObject.getDn() == False:
-        return
+    if not user.exists():
+        return None
 
-    user = userclass.User()
-    user.id = uid
-    user.groups = ldapObject.getGroups()
-    user.cn = ldapObject.getCn()
+    user.populate()
 
     return user
 
@@ -59,32 +58,11 @@ def templateDefaultValues():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    next = request.args.get('next')
-
     # check if user is already logged in
     if flask_login.current_user.is_authenticated:
-        return redirect(next or url_for('index'))
+        return redirect(request.args.get('next') or url_for('index'))
 
-    # Render the view
-    if request.method == 'GET':
-        return render_template('login.html')
-
-    # Check if there is data to login the user
-    if 'username' in request.form.keys() and 'password' in request.form.keys():
-        username = request.form['username']
-
-        ldapObject = LdapHandler(username)
-
-        # redirect to index if credentials are correct
-        if ldapObject.verifyPw(request.form['password']):
-
-            user = userclass.User()
-            user.id = username
-            flask_login.login_user(user)
-
-            return redirect(next or url_for('index'))
-
-    return render_template('login.html', loginFailed=True)
+    return AuthMechanism.login()
 
 
 # Logout
@@ -104,11 +82,11 @@ def index():
     # default group
     if active_group == None:
         active_group = settings.getDefaultGroup(flask_login.current_user.id,
-                flask_login.current_user.getGroups())
+                flask_login.current_user.groups)
 
     # Check if user is allowed to view this group
     viewableGroups = settings.getPadGroups(flask_login.current_user.id,
-            flask_login.current_user.getGroups())
+            flask_login.current_user.groups)
 
     groupExistsAndAllowed = active_group in viewableGroups
 

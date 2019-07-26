@@ -30,6 +30,7 @@
 							<div class="content">
 								<form id="loginForm" method="POST">
 
+									{% if showUsername %}
 									<div class="field is-horizontal">
 										<div class="field-label is-normal">
 											<label class="label">Username</label>
@@ -42,7 +43,9 @@
 											</div>
 										</div>
 									</div>
+									{% endif %}
 
+									{% if showPassword %}
 									<div class="field is-horizontal">
 										<div class="field-label is-normal">
 											<label class="label">Password</label>
@@ -55,6 +58,7 @@
 											</div>
 										</div>
 									</div>
+									{% endif %}
 									<div class="field is-grouped is-grouped-right">
 										<button type="submit" id="loginButton" class="button is-danger card-footer-item">Login</button>
 									</div>
