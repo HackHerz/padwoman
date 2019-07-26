@@ -37,6 +37,11 @@ auth:
         pw: $6$TChhNwMGF.1sn3yi$iJ2klrOEyGlGxOVImpIAq5Ak8J2iaVsSEFTkNONPv6F78FRD7X8UZP5Y/0BoQkf9v.Z99bjUn3qsi21M4LWZn/ #password
         cn: Admin 1
         groups: [admin]
+  external:
+    uid: Auth-User
+    cn: Auth-Cn
+    groups: Auth-Groups
+    login-url: https://auth.example.com/?url=<redirect>
 
 padgroups:
   allgemein:
@@ -101,6 +106,15 @@ No configuration needed.
 #### ldap
 - **userfilter** expects a username (%s) as argument
 - **groupfilter** expects a username (%s) as argument
+
+#### external
+
+- **uid** The HTTP header field name for the uid
+- **cn** (optional) The HTTP header field name for the common name
+- **groups** (optional) The HTTP header field name for the groups, which are seperated by a `;`
+- **login-url** (optional) The URL where to redirect to for login. `<redirect>` will be replaced with the base64 encoded pad URL
+
+Do not use this method unless you have properly set up a reverse proxy that handles the authentication!
 
 
 ### padgroups

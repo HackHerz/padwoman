@@ -17,7 +17,11 @@
 					{% if loginFailed %}
 					<article class="message is-danger">
 						<div class="message-body">
+							{% if showUsername and showPassword %}
 							Username or Password were <strong>incorrect</strong>. Please try again.
+							{% else %}
+							Login was not possible.
+							{% endif %}
 						</div>
 					</article>
 					{% endif %}
