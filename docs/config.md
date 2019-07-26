@@ -94,6 +94,9 @@ Do not use plaintext passwords in production use!
 
 You can generate hashed passwords in python with `crypt.crypt(password)`.
 
+#### none
+
+No configuration needed.
 
 #### ldap
 - **userfilter** expects a username (%s) as argument
