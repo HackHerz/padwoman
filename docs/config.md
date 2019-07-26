@@ -28,6 +28,15 @@ auth:
     groupfilter: (&(objectClass=posixGroup)(memberUID=%s))
     binddn: cn=www-data,dc=blub,dc=de
     bindpw: bindpw
+  static:
+    users:
+      - uid: user1
+        pw: user1
+        cn: User 1
+      - uid: admin1
+        pw: $6$TChhNwMGF.1sn3yi$iJ2klrOEyGlGxOVImpIAq5Ak8J2iaVsSEFTkNONPv6F78FRD7X8UZP5Y/0BoQkf9v.Z99bjUn3qsi21M4LWZn/ #password
+        cn: Admin 1
+        groups: [admin]
 
 padgroups:
   allgemein:
@@ -72,6 +81,19 @@ You can use every argument which is specififed by the python redis library.
 ### auth
 
 - **method** must be one of the authentication modules in the auth/ folder
+
+#### static
+
+- **users** is a list of users with the following form:
+  - **uid** The user id
+  - **pw** The password in either hashed form or in plaintext
+  - **cn** The common name (display name)
+  - **groups** (optional) A list of groups the is is part of
+
+Do not use plaintext passwords in production use!
+
+You can generate hashed passwords in python with `crypt.crypt(password)`.
+
 
 #### ldap
 - **userfilter** expects a username (%s) as argument
