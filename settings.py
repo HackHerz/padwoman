@@ -1,6 +1,7 @@
 import oyaml as yaml
-from datetime import datetime
+import datetime
 from jinja2 import Template
+from re import search, sub
 
 # Open Config file
 stream = open('settings.yml', 'r')
@@ -94,23 +95,56 @@ def groupTemplateMandatory(group):
     return False
 
 
+# check if the datetime is adjustable for the group
+def datetimeAdjustable(group):
+    if "datetimeadjustable" in groupDict[group].keys():
+        return groupDict[group]['datetimeadjustable']
+
+    return False
+
+
+# calculate default date from defaultweekday
+def getDateDefault(group):
+    if "weekdaydefault" in groupDict[group].keys():
+        weekdaydefault = max(1, min(7, int(groupDict[group]['weekdaydefault'])))
+        d = datetime.date.today()
+        while d.isoweekday() != weekdaydefault:
+            d += datetime.timedelta(1)
+        return d.strftime("%Y-%m-%d")
+
+    return ""
+
+# check if either the name or content include the date
+def groupHasDate(group):
+    pattern = "{{ *date(time)? *}}"
+    return (search(pattern, groupDict[group].get('padname', "")) is not None
+            or search(pattern, groupDict[group].get('content', "")) is not None)
+
+
+# check if either the name or content include the date
+def groupHasTime(group):
+    pattern = "{{ *(date)?time *}}"
+    return (search(pattern, groupDict[group].get('padname', "")) is not None
+            or search(pattern, groupDict[group].get('content', "")) is not None)
+
+
 # Helper
-def render(template):
+def render(template, timestamp):
     t = Template(template)
 
-    tDate = datetime.now().strftime('%Y-%m-%d')
-    tTime = datetime.now().strftime('%H:%M')
+    tDate = timestamp.strftime('%Y-%m-%d')
+    tTime = timestamp.strftime('%H:%M')
     tDatetime = tDate + ' ' + tTime
 
     return t.render(date=tDate, time=tTime, datetime=tDatetime)
 
 
 # render group template
-def getGroupTemplate(group):
+def getGroupTemplate(group, timestamp):
     if not groupHasTemplate:
         return None
     
-    body = render(groupDict[group]['content'])
+    body = render(groupDict[group]['content'], timestamp)
     return "<!DOCTYPE HTML><html><body>%s</body></html>" % body
 
 
@@ -118,8 +152,7 @@ def getGroupTemplate(group):
 def getGroupPadname(group):
     if not groupHasPadnameSuggestion(group):
         return ""
-    
-    name = render(groupDict[group]['padname'])
-    return name.replace(' ', '_')
+
+    return sub(r" (?![^{]*}})", '_', groupDict[group]['padname'])
 
 

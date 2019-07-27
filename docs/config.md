@@ -55,6 +55,9 @@ padgroups:
     padname: "Sitzung_{{ date }}"
     padnameismandatory: true
     contentismandatory: true
+    datetimeadjustable: true
+    weekdaydefault: 2
+    timedefault: "18:00"
 
   admins:
     name: Admins
@@ -132,12 +135,15 @@ The groups are listed below an unique identifier, which is only used in the conf
 - **contentismandatory** boolean if the pad template is enforced or not
 - **user** a list of usernames which are allowed to view the padgroup
 - **groups** a list of ldap groups which are allowed to view the padgroup
+- **datetimeadjustable** boolean if the date and/or time is a user input
+- **weekdaydefault** (optional) the default weekday (iso number) from which the default date is calculated
+- **timedefault** (optional) the default time
 
 
 If there are no users or groups specified everyone who can login is allowed to view that padgroup.
 
 **content** and **padname** have the following variables they can use ({{ variablename }}):
 
-- **date** the current date
-- **time** the current time
-- **datetime** the current date and time
+- **date** either the current date or user supplied (see datetimeadjustable)
+- **time** either the current time or user supplied
+- **datetime** either the current date and time or user supplied

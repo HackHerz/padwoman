@@ -122,6 +122,11 @@ def index():
         nameSuggestionMandatory=settings.groupPadnameSuggestionMandatory(active_group),
         new_pad_name=settings.getGroupPadname(active_group),
         template_mandatory=settings.groupTemplateMandatory(active_group),
+        group_has_date=settings.groupHasDate(active_group),
+        group_has_time=settings.groupHasTime(active_group),
+        datetimeAdjustable=settings.datetimeAdjustable(active_group),
+        dateDefault=settings.getDateDefault(active_group),
+        timeDefault=settings.groupDict[active_group].get('timedefault', ""),
         groupExistsAndAllowed=groupExistsAndAllowed))
 
     # Building the user cookie
@@ -146,6 +151,12 @@ api.add_resource(microapi.CreatePad,
 
 api.add_resource(microapi.CreateContentPad,
         '/uapi/CreateContentPad/<string:group>/<string:padName>')
+
+api.add_resource(microapi.CreatePadDatetime,
+        '/uapi/CreatePad/<string:group>/<string:padName>/<string:timestamp>')
+
+api.add_resource(microapi.CreateContentPadDatetime,
+        '/uapi/CreateContentPad/<string:group>/<string:padName>/<string:timestamp>')
 
 api.add_resource(microapi.PadVisibility,
         '/uapi/PadVisibility/<string:padName>/<string:visibility>')

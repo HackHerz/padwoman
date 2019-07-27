@@ -15,7 +15,7 @@
 					<div class="field-body">
 						<div class="field">
 							<div class="control">
-								<input class="input" data-padname="{{ new_pad_name }}" id="modalTextfield" type="text" placeholder="Total wichtige Dinge" value="{{ new_pad_name }}" {% if nameSuggestionMandatory %}disabled{% endif %}>
+								<input class="input" data-padname="{{ new_pad_name }}" id="modalPadname" type="text" placeholder="Total wichtige Dinge" value="{{ new_pad_name }}" {% if nameSuggestionMandatory %}disabled{% endif %}>
 							</div>
 
 						<p class="help is-danger" id="modalError"></p>
@@ -23,6 +23,43 @@
 					</div>
 
 				</div>
+
+				{% if group_has_date or group_has_time %}
+				<div class="field is-horizontal">
+					<div class="field-label is-normal"></div>
+					<div class="field-body">
+						{% if group_has_date %}
+						<div class="field">
+							<div class="control">
+								<input class="input" id="modalDate" type="date" required {% if not datetimeAdjustable %}readonly{% endif %} value="{{ dateDefault }}">
+							</div>
+						</div>
+						{% endif %}
+						{% if group_has_time %}
+						<div class="field">
+							<div class="control">
+								<input class="input" id="modalTime" type="time" required {% if not datetimeAdjustable %}readonly{% endif %} value="{{ timeDefault }}">
+							</div>
+						</div>
+						{% endif %}
+						<div class="control">
+							<button type="button" class="button" id="modalNow" {% if not datetimeAdjustable %}disabled{% endif %}><i class="fas fa-calendar-day"></i></button>
+							{% if '' != dateDefault or '' != timeDefault %}<button type="button" class="button" id="modalReset" {% if not datetimeAdjustable %}disabled{% endif %}><i class="fas fa-undo"></i></button>{% endif %}
+						</div>
+					</div>
+				</div>
+
+				<div class="field is-horizontal">
+					<div class="field-label is-normal"></div>
+					<div class="field-body">
+						<div class="field">
+							<div class="control">
+								<input class="input" id="modalPadnamePreview" type="text" value="" disabled>
+							</div>
+						</div>
+					</div>
+				</div>
+				{% endif %}
 
 				<input id="currentGroup" value="{{ active_group }}" hidden>
 
