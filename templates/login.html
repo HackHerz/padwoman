@@ -28,7 +28,17 @@
 
 					<div class="card">
 						<header class="card-header">
+							{% if methods%}
+							<div class="tabs">
+								<ul>
+									{% for method in methods %}
+									<li {% if method == active_method %}class="is-active"{% endif %}><a href="?{{ argstring }}method={{ method['method'] }}">{{ method['name'] }}</a></li>
+									{% endfor %}
+								</ul>
+							</div>
+							{% else %}
 							<p class="card-header-title">Login</p>
+							{% endif %}
 						</header>
 						<div class="card-content">
 							<div class="content">

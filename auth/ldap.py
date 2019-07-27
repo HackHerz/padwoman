@@ -2,7 +2,7 @@ from ldappool import ConnectionManager
 import ldap
 import redis
 import json
-from flask import request, redirect, url_for, render_template
+from flask import request, redirect, url_for
 from flask_login import login_user
 
 # own stuff
@@ -19,9 +19,9 @@ red = redis.Redis(**settings.data['redis'])
 
 class AuthMechanism(auth.auth.AuthMechanism):
     @staticmethod
-    def login():
+    def login(User, userprefix=""):
         if request.method == 'GET':
-            return render_template('login.html', showUsername=True, showPassword=True)
+            return auth.auth.render_login(showUsername=True, showPassword=True)
 
         # Check if there is data to login the user
         if 'username' in request.form.keys() and 'password' in request.form.keys():
@@ -31,11 +31,12 @@ class AuthMechanism(auth.auth.AuthMechanism):
 
             # redirect to index if credentials are correct
             if user.verifyPw(request.form['password']):
+                user.updateIdWithPrefix(userprefix)
                 login_user(user)
 
                 return redirect(request.args.get('next') or url_for('index'))
 
-        return render_template('login.html', showUsername=True, showPassword=True, loginFailed=True)
+        return auth.auth.render_login(showUsername=True, showPassword=True, loginFailed=True)
 
 
 class User(auth.auth.User):

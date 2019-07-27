@@ -44,6 +44,19 @@ auth:
     login-url: https://auth.example.com/?url=<redirect>
     logout-url: https://auth.example.com/?url=<redirect>&logout=1
     logout-cookies-delete: [ext-auth-cookie]
+  multi:
+    methods:
+      - method: ldap
+        name: LDAP
+        defaultgroups: [admin]
+      - method: static
+        name: Static
+        userprefix: static-
+      - method: none
+        name: None
+        userprefix: none-
+      - method: external
+        name: SSO
 
 padgroups:
   allgemein:
@@ -122,6 +135,14 @@ No configuration needed.
 - **logout-cookies-delete** (optional) A list of cookies that are destroyed at logout
 
 Do not use this method unless you have properly set up a reverse proxy that handles the authentication!
+
+#### multi
+
+- **methods** A list of authentication methods that can be used. The methods are in the following form:
+  - **method** must be one of the authentication modules in the auth/ folder
+  - **name** The name that gets displayed in the tabs on login
+  - **defaultgroups** (optional) A list of groups that every user that authenticates through this method gets
+  - **userprefix** (optional) A prefix that every user gets internally to distinguish users from different methods that have the same id. This can be intentionally be the same if you want to merge users from different authentication methods.
 
 
 ### padgroups

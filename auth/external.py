@@ -1,27 +1,28 @@
 import auth.auth
 import settings
 from flask_login import login_user
-from flask import request, redirect, url_for, render_template, make_response
+from flask import request, redirect, url_for, make_response
 from base64 import b64encode
 
 
 class AuthMechanism(auth.auth.AuthMechanism):
     @staticmethod
-    def login():
+    def login(User, userprefix=""):
         hdr_uid = settings.data['auth']['external']['uid']
         if hdr_uid in request.headers:
             user = User(request.headers[hdr_uid])
+            user.updateIdWithPrefix(userprefix)
             login_user(user)
             return redirect(request.args.get('next') or url_for('index'))
         elif request.method == 'GET':
-            return render_template('login.html')
+            return auth.auth.render_login()
         else:
             if 'login-url' in settings.data['auth']['external']:
                 login_url = settings.data['auth']['external']['login-url']
                 redirect_url = str(b64encode(request.url.encode("utf-8")), "utf-8")
                 return redirect(login_url.replace('<redirect>', redirect_url))
             else:
-                return render_template('login.html', loginFailed=True)
+                return auth.auth.render_login(loginFailed=True)
 
     @staticmethod
     def logout():
