@@ -1,14 +1,24 @@
+---
 kind: pipeline
 name: default
 
 steps:
-  - name: docker  
-    image: plugins/docker
+  - name: Build Documentation
+    image: python:3.7
+    commands:
+      - pip install mkdocs mkdocs-material
+      - mkdocs build
+
+  - name: Upload Docs
+    image: plugins/s3
     settings:
-        repo: maxwell:5000/padwoman
-        registry: maxwell:5000
-        insecure: true
-        tags: latest
-    when:
-        branch:
-            - master
+      bucket: hackherz-website
+      access_key:
+        from_secret: access_key
+      secret_key:
+        from_secret: secret_key
+      source: site/**/*
+      target: /padwoman/
+      strip_prefix: site/
+      path_style: true
+      endpoint: https://s3.fckggl.de
