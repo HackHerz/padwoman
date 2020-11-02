@@ -120,7 +120,7 @@ function submitFunction(e) {
 
 		// Mach mal response
 		request = new XMLHttpRequest();
-		
+
 		request.onreadystatechange = function() {
 			if(this.readyState == 4 && this.status == 200) {
 				modalButton.classList.remove('is-loading');
@@ -133,9 +133,9 @@ function submitFunction(e) {
 					modalError.classList.remove('is-danger');
 					modalError.classList.add('is-success');
 					modalError.innerHTML = "Success! Please wait...";
-					location.reload(); 
+					location.reload();
 				} else { // failure in pad creation
-					modalError.innerHTML = response.message	
+					modalError.innerHTML = response.message
 				}
 			}
 		};
@@ -162,7 +162,7 @@ function padVisibility(pad, newStatus) {
 		'/uapi/PadVisibility/' + pad + '/' + newStatus);
 
 	request.addEventListener('load', function(event) {
-		location.reload(); 
+		location.reload();
 	});
 
 	request.send();

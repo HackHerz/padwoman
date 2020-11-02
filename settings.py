@@ -143,7 +143,7 @@ def render(template, timestamp):
 def getGroupTemplate(group, timestamp):
     if not groupHasTemplate:
         return None
-    
+
     body = render(groupDict[group]['content'], timestamp)
     return "<!DOCTYPE HTML><html><body>%s</body></html>" % body
 
@@ -154,5 +154,3 @@ def getGroupPadname(group):
         return ""
 
     return sub(r" (?![^{]*}})", '_', groupDict[group]['padname'])
-
-
