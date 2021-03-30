@@ -4,7 +4,7 @@ flask-restful==0.3.6
 flask_login==0.4.1
 datetime==4.3
 redis==3.2.0
-pyyaml==3.13
+pyyaml==5.4
 oyaml==0.7
 requests==2.21.0
 ldappool==2.4.1
