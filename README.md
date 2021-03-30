@@ -1,10 +1,10 @@
 # Padwoman
 
-[![Build Status](https://imap.fs-etit.de/api/badges/Admins/padwoman/status.svg)](https://imap.fs-etit.de/Admins/padwoman)
+![Build Status](https://img.shields.io/docker/cloud/build/hackherz/padwoman) ![Docker Pulls](https://img.shields.io/docker/pulls/hackherz/padwoman) ![Docker Stars](https://img.shields.io/docker/stars/hackherz/padwoman)
 
-Inspired by [Padman](https://github.com/d120/padman) with redis caching as a workaround to the slow etherpad lite api.
+Inspired by [Padman](https://github.com/d120/padman) with redis caching as a workaround to the slow etherpad lite api. But be aware that this is my first Python project.
 
-You can find the Documentation [here](https://hackherz.github.io/padwoman/).
+You can find the Documentation [here](https://padwoman.hackherz.com).
 
 ## Screenshots
 
