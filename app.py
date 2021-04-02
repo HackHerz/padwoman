@@ -5,7 +5,6 @@ from flask import Flask
 import flask_login
 from flask_restful import Resource, Api, reqparse
 from datetime import timedelta
-from apscheduler.schedulers.background import BackgroundScheduler
 
 # Own stuff
 import userclass
@@ -14,7 +13,6 @@ from ldaphandler import LdapHandler
 import microapi
 from etherpad_cached_api import *
 from _version import __version__
-from clockwork import updateTimestamps
 
 
 # Flask
@@ -27,12 +25,6 @@ api = Api(app) # API wuhuuu
 login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
-
-# Job to reneew lastEdit timestamps in the cache
-sched = BackgroundScheduler(timezone=utc)
-sched.start()
- 
-sched.add_job(updateTimestamps, 'interval', seconds=59)
 
 
 
@@ -127,7 +119,7 @@ def index():
 
     for g in viewableGroups:
         etherPadGroupIds[g] = createGroupIfNotExistsFor(g)
-        
+
         # sessions for the user
         etherPadSessions.append(createSession(etherPadGroupIds[g],
             etherPadAuthor, validUntil))
@@ -142,7 +134,7 @@ def index():
 
     # Rendering the View
     response = make_response(render_template('main.html',
-        pads=sortedList, groups=viewableGroups, active_group=active_group, 
+        pads=sortedList, groups=viewableGroups, active_group=active_group,
         group_has_template=settings.groupHasTemplate(active_group),
         nameSuggestionMandatory=settings.groupPadnameSuggestionMandatory(active_group),
         new_pad_name=settings.getGroupPadname(active_group),
@@ -151,7 +143,7 @@ def index():
 
     # Building the user cookie
     sessionstring = '%2c'.join(etherPadSessions)
-    response.set_cookie('sessionID', sessionstring, expires=validUntil) 
+    response.set_cookie('sessionID', sessionstring, expires=validUntil)
 
     return response
 
