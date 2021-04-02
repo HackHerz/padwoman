@@ -4,7 +4,7 @@ from jinja2 import Template
 
 # Open Config file
 stream = open('settings.yml', 'r')
-data = yaml.load(stream)
+data = yaml.load(stream, Loader=yaml.SafeLoader)
 
 # make groups more accessible
 groupDict = {}
