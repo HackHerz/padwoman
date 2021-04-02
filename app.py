@@ -142,9 +142,11 @@ def index():
         groupExistsAndAllowed=groupExistsAndAllowed))
 
     # Building the user cookie
-    sessionstring = '%2c'.join(etherPadSessions)
+    sessionstring = '%'.join(etherPadSessions)
     response.set_cookie('sessionID', sessionstring, expires=validUntil)
 
+    # Flask would escape the ',', but etherpad has become very picky recently
+    response.headers['Set-Cookie'] = response.headers['Set-Cookie'].replace('%', ',')
     return response
 
 
