@@ -61,7 +61,7 @@
 				<div style="overflow: auto;">
 					<table class="table is-fullwidth is-bordered is-hoverable">
 						<colgroup>
-							<col span="1" style="width: 1em;">
+							<col span="1" style="width: 5em;">
 							<col span="1">
 							<col span="1" style="width: 4em;">
 						</colgroup>
@@ -70,7 +70,9 @@
 							<tr>
 								<td><a name="visibilityToggle" onclick="padVisibility('{{ pad.id | urlencode }}', {% if pad.public %}'private'{% else %}'public'{% endif %})"
 										title="make this pad {%if pad.public %}private{% else %}public{% endif %}">
-										<span class="icon">{% if pad.public %}<i class="fas fa-globe-americas">{% else %}<i class="fas fa-home">{% endif %}</i></span></a></td>
+										<span class="icon">{% if pad.public %}<i class="fas fa-globe-americas">{% else %}<i class="fas fa-home">{% endif %}</i></span></a>
+									<a name="contextMenu" data-padid='{{ pad.id | urlencode }}'><span class="icon"><i class="fas fa-ellipsis-h"></i></a>
+								</td>
 								<td><a href="{{ pad.url }}">{{ pad.title }}</a></td>
 								<td><span class="tag is-family-monospace">{{ pad.date }}</span></td>
 							</tr>
@@ -95,6 +97,9 @@
 
 		<!-- Modal to create new pads -->
 		{% include 'modal.html' %}
+
+		<!-- contextMenu template -->
+		{% include 'contextmenu.html' %}
 
 		<!-- JS to make things work -->
 		<script src="{{ url_for('static', filename='js/components.js') }}"></script>

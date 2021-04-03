@@ -130,4 +130,22 @@ document.addEventListener('DOMContentLoaded', () => {
 			});
 		});
 	}
+
+
+	/*
+	 * Contextmenu Stuff
+	 */
+	tippy('a[name=contextMenu]', {
+		content(reference) {
+			const id = reference.getAttribute('data-padid');
+			var template = document.getElementById("contextMenu-template");
+			let button = template.querySelector('a');
+			button.href = "/uapi/ExportLatex/" + id;
+			return template.innerHTML;
+		},
+		allowHTML: true,
+		interactive: true,
+		trigger: 'click',
+		hideOnClick: true,
+	});
 });
