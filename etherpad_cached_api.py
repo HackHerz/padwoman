@@ -15,11 +15,11 @@ def requestHandler(endpoint, data):
     data['apikey'] = settings.data['pad']['apikey']
     r = requests.get(settings.data['pad']['apiurl'] + '1.2/' + endpoint,
             params=data)
-    
+
     return r.json()
 
 
-# creates a new pad in this group 
+# creates a new pad in this group
 def createGroupPad(groupId, padName):
     # invalidate cache
     red.delete("padlist:%s" % groupId)
@@ -32,7 +32,7 @@ def createGroupPad(groupId, padName):
     return r
 
 
-# this functions helps you to map your application author ids to etherpad lite author ids 
+# this functions helps you to map your application author ids to etherpad lite author ids
 def createAuthorIfNotExistsFor(uid, name):
     redisKey = 'author:' + uid
     rVal = red.get(redisKey)
@@ -76,7 +76,7 @@ def createGroupIfNotExistsFor(groupMapper):
     return None
 
 
-# returns all pads of this group 
+# returns all pads of this group
 def listPads(groupId):
     data = { 'groupID' : groupId }
     r = requestHandler('listPads', data)
@@ -89,7 +89,7 @@ def listPads(groupId):
     return []
 
 
-# returns the timestamp of the last revision of the pad 
+# returns the timestamp of the last revision of the pad
 def getLastEdited(padId):
     data = { 'padID' : padId }
     r = requestHandler('getLastEdited', data)
@@ -117,7 +117,7 @@ def getPublicStatus(padId):
 # set the public status of a pad
 def setPublicStatus(padId, publicStatus):
     red.delete("pad:public:%s" % padId)
-    
+
     data = { 'padID' : padId,
             'publicStatus' : "true" if publicStatus else "false" }
 
@@ -125,7 +125,7 @@ def setPublicStatus(padId, publicStatus):
 
     return r
 
-# creates a new session. validUntil is an unix timestamp in seconds 
+# creates a new session. validUntil is an unix timestamp in seconds
 # TODO caching
 def createSession(groupId, authorId, validUntil):
     data = { 'groupID' : groupId, 'authorID' : authorId,
@@ -166,7 +166,7 @@ def calcExpTime(datum):
     year = int(datum[0:4])
     month = int(datum[5:7])
     day = int(datum[8:10])
-    
+
     dStamp = datetime(year, month, day)
     delta = datetime.now() - dStamp
 
@@ -203,7 +203,7 @@ def getPadsFromCache(groupId):
 # returns a list of all pads and their necessary values
 def getPadlist(groupId):
     padsInGroup = getPadsFromCache(groupId)
-        
+
     # gather information of these pads
     lastEditPipe = red.pipeline()
     publicPipe = red.pipeline()
@@ -219,7 +219,7 @@ def getPadlist(groupId):
 
     cacheUpdate = red.pipeline()
     padlist = []
-    
+
     # Check where values are missing
     for i in range(0, len(padsInGroup)):
         # Public Value
@@ -253,3 +253,11 @@ def getPadlist(groupId):
     cacheUpdate.execute()
 
     return padlist
+
+
+# set the public status of a pad
+def getHtml(padId):
+    data = { 'padID' : padId }
+    r = requestHandler('getHTML', data)
+
+    return r

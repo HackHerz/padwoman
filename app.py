@@ -162,6 +162,7 @@ api.add_resource(microapi.CreateContentPad,
 api.add_resource(microapi.PadVisibility,
         '/uapi/PadVisibility/<string:padName>/<string:visibility>')
 
+api.add_resource(microapi.ExportLatex, '/uapi/ExportLatex/<string:padName>')
 
 # Run
 if __name__ == '__main__':

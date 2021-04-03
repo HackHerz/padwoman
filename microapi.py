@@ -1,6 +1,8 @@
 from flask_restful import Resource
+from flask import Response
 import flask_login
 import re
+from latex import latex
 
 # own stuff
 from etherpad_cached_api import *
@@ -57,3 +59,11 @@ class PadVisibility(Resource):
             return { 'code' : 3, 'message' : 'not ok' }
 
         return setPublicStatus(padName, v)
+
+
+# Export LaTeX of Pad
+class ExportLatex(Resource):
+    @flask_login.login_required
+    def get(self, padName):
+        j = getHtml(padName)
+        return Response(latex(j['data']['html']), mimetype='text/plain')
