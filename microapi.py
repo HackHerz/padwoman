@@ -66,4 +66,6 @@ class ExportLatex(Resource):
     @flask_login.login_required
     def get(self, padName):
         j = getHtml(padName)
-        return Response(latex(j['data']['html']), mimetype='text/plain')
+        r = Response(latex(j['data']['html']), mimetype='application/x-latex')
+        r.headers['Content-Disposition'] = 'attachment; filename=%s.tex' % padName.split('$')[1]
+        return r
