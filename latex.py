@@ -4,8 +4,10 @@ from lxml import etree
 from io import StringIO
 
 
-def html2latex(el):  # fill in this function to catch and convert html tags
+# fill in this function to catch and convert html tags
+def html2latex(el, tabs=0):
     result = []
+    t = '\t' * tabs
 
     if el.text:
         result.append(el.text)
@@ -16,12 +18,6 @@ def html2latex(el):  # fill in this function to catch and convert html tags
             print('text', sel.text)
             print('tail', sel.tail)
             print('attrib', sel.attrib)
-
-        elif sel.tag in ["span"]:  #
-            for att in sel.attrib.keys():
-                if att == 'style':
-                    if sel.attrib[att] == 'font-style:italic':
-                        result.append(r'\textit{%s}' % (html2latex(sel)))
 
         elif sel.tag in ["br"]:  # newline
             result.append("\n")
@@ -40,14 +36,16 @@ def html2latex(el):  # fill in this function to catch and convert html tags
 
         # enumerations
         elif sel.tag in ["ol"]:
-            result.append('\n\\begin{enumerate}\n%s\\end{enumerate}' % html2latex(sel))
+            result.append(('\n' + t + '\\begin{enumerate}\n%s' + t + '\\end{enumerate}') %
+                          html2latex(sel, tabs+1))
 
         # itemize
         elif sel.tag in ["ul"]:
-            result.append('\n\\begin{itemize}\n%s\\end{itemize}' % html2latex(sel))
+            result.append(('\n' + t + '\\begin{itemize}\n%s' + t + '\\end{itemize}') %
+                          html2latex(sel, tabs+1))
 
         elif sel.tag in ["li"]:
-            result.append('\\item %s\n' % html2latex(sel))
+            result.append(t + '\\item %s\n' % html2latex(sel, tabs))
 
         else:
             result.append(html2latex(sel))
@@ -58,7 +56,7 @@ def html2latex(el):  # fill in this function to catch and convert html tags
 
 
 def latex(html):
-    # print(html)
+    print(html)
     parser = etree.HTMLParser()
     tree = etree.parse(StringIO(html), parser)  # expects a file, use StringIO
     root = tree.getroot()
