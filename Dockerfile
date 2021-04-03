@@ -2,7 +2,7 @@ FROM python:3.9-alpine
 
 WORKDIR /usr/src/app
 
-RUN apk add --no-cache gcc libc-dev openldap-dev
+RUN apk add --no-cache gcc libc-dev openldap-dev libxml2-dev libxslt-dev
 
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
