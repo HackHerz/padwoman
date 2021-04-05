@@ -143,7 +143,8 @@ def index():
 
     # Building the user cookie
     sessionstring = '%'.join(etherPadSessions)
-    response.set_cookie('sessionID', sessionstring, expires=validUntil)
+    response.set_cookie('sessionID', sessionstring, expires=validUntil,
+                        samesite="Strict")
 
     # Flask would escape the ',', but etherpad has become very picky recently
     response.headers['Set-Cookie'] = response.headers['Set-Cookie'].replace('%', ',')
