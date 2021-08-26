@@ -1,15 +1,32 @@
----
 kind: pipeline
-name: default
+name: Docker
 
 steps:
-  - name: Build Documentation
+- name: docker  
+  image: plugins/docker
+  settings:
+    repo: hackherz/padwoman
+    auto_tag: true
+    username: hackherz
+    password:
+      from_secret: docker_pw
+
+---
+kind: pipeline
+name: Documentation
+
+trigger:
+  branch:
+    - releases
+
+steps:
+  - name: Build
     image: python:3.7
     commands:
       - pip install mkdocs mkdocs-material
       - mkdocs build
 
-  - name: Upload Docs
+  - name: Upload
     image: plugins/s3
     settings:
       bucket: hackherz-website
