@@ -3,14 +3,12 @@ from flask import render_template
 from flask import request, redirect, url_for, make_response
 from flask import Flask
 import flask_login
-from flask_restful import Resource, Api, reqparse
+from flask_restful import Api
 from datetime import timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
+from importlib import import_module
 
 # Own stuff
-import userclass
-import settings
-from ldaphandler import LdapHandler
 import microapi
 from etherpad_cached_api import *
 from _version import __version__
@@ -28,7 +26,11 @@ login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
 
-# Job to reneew lastEdit timestamps in the cache
+# Load Authentication
+User = getattr(import_module('auth.' + settings.data['auth']['method']), 'User')
+AuthMechanism = getattr(import_module('auth.' + settings.data['auth']['method']), 'AuthMechanism')
+
+# Job to renew lastEdit timestamps in the cache
 sched = BackgroundScheduler(timezone=utc)
 sched.start()
 sched.add_job(updateTimestamps, 'interval', seconds=59)
@@ -36,16 +38,12 @@ sched.add_job(updateTimestamps, 'interval', seconds=59)
 
 @login_manager.user_loader
 def user_loader(uid):
-    ldapObject = LdapHandler(uid)
+    user = User(uid)
 
-    # User does not exist
-    if ldapObject.getDn() == False:
-        return
+    if not user.exists():
+        return None
 
-    user = userclass.User()
-    user.id = uid
-    user.groups = ldapObject.getGroups()
-    user.cn = ldapObject.getCn()
+    user.populate()
 
     return user
 
@@ -60,39 +58,18 @@ def templateDefaultValues():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    next = request.args.get('next')
-
     # check if user is already logged in
     if flask_login.current_user.is_authenticated:
-        return redirect(next or url_for('index'))
+        return redirect(request.args.get('next') or url_for('index'))
 
-    # Render the view
-    if request.method == 'GET':
-        return render_template('login.html')
-
-    # Check if there is data to login the user
-    if 'username' in request.form.keys() and 'password' in request.form.keys():
-        username = request.form['username']
-
-        ldapObject = LdapHandler(username)
-
-        # redirect to index if credentials are correct
-        if ldapObject.verifyPw(request.form['password']):
-
-            user = userclass.User()
-            user.id = username
-            flask_login.login_user(user)
-
-            return redirect(next or url_for('index'))
-
-    return render_template('login.html', loginFailed=True)
+    return AuthMechanism.login(User)
 
 
 # Logout
 @app.route('/logout')
 def logout():
     flask_login.logout_user()
-    return redirect(url_for("login"))
+    return AuthMechanism.logout()
 
 
 # Serving the actual site
@@ -105,11 +82,11 @@ def index():
     # default group
     if active_group == None:
         active_group = settings.getDefaultGroup(flask_login.current_user.id,
-                flask_login.current_user.getGroups())
+                flask_login.current_user.groups)
 
     # Check if user is allowed to view this group
     viewableGroups = settings.getPadGroups(flask_login.current_user.id,
-            flask_login.current_user.getGroups())
+            flask_login.current_user.groups)
 
     groupExistsAndAllowed = active_group in viewableGroups
 
@@ -145,6 +122,11 @@ def index():
         nameSuggestionMandatory=settings.groupPadnameSuggestionMandatory(active_group),
         new_pad_name=settings.getGroupPadname(active_group),
         template_mandatory=settings.groupTemplateMandatory(active_group),
+        group_has_date=settings.groupHasDate(active_group),
+        group_has_time=settings.groupHasTime(active_group),
+        datetimeAdjustable=settings.datetimeAdjustable(active_group),
+        dateDefault=settings.getDateDefault(active_group),
+        timeDefault=settings.groupDict[active_group].get('timedefault', ""),
         groupExistsAndAllowed=groupExistsAndAllowed))
 
     # Building the user cookie
@@ -170,6 +152,12 @@ api.add_resource(microapi.CreatePad,
 api.add_resource(microapi.CreateContentPad,
         '/uapi/CreateContentPad/<string:group>/<string:padName>')
 
+api.add_resource(microapi.CreatePadDatetime,
+        '/uapi/CreatePad/<string:group>/<string:padName>/<string:timestamp>')
+
+api.add_resource(microapi.CreateContentPadDatetime,
+        '/uapi/CreateContentPad/<string:group>/<string:padName>/<string:timestamp>')
+
 api.add_resource(microapi.PadVisibility,
         '/uapi/PadVisibility/<string:padName>/<string:visibility>')
 
@@ -177,4 +165,4 @@ api.add_resource(microapi.ExportLatex, '/uapi/ExportLatex/<string:padName>')
 
 # Run
 if __name__ == '__main__':
-     app.run(host='0.0.0.0', port='5000')
+     app.run(host=settings.data['default'].get('host', '0.0.0.0'), port=settings.data['default'].get('port', '5000'))

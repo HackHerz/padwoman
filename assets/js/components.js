@@ -1,23 +1,83 @@
+var modalPadname = document.getElementById('modalPadname');
+var modalDate = document.getElementById('modalDate');
+var modalTime = document.getElementById('modalTime');
+var modalNow = document.getElementById('modalNow');
+var modalReset = document.getElementById('modalReset');
+var modalPadnamePreview = document.getElementById('modalPadnamePreview');
+var createModal = document.getElementById('createModal');
+
+
+
+function updatePadnamePreview() {
+	var padname = modalPadname.value;
+
+	if (modalDate != null)
+		padname = padname.replace(/{{ *date *}}/g, modalDate.value);
+
+	if (modalTime != null)
+		padname = padname.replace(/{{ *time *}}/g, modalTime.value);
+
+	if (modalTime != null && modalDate != null)
+		padname = padname.replace(/{{ *datetime *}}/g, modalDate.value + '_' + modalTime.value);
+
+	modalPadnamePreview.value = padname;
+}
+
+
+
+function resetDatetime(now = false) {
+	const nowDate = new Date();
+
+	if (modalDate != null)
+		if (now || modalDate.defaultValue === "")
+			modalDate.value = nowDate.getFullYear() + '-' + ('0' + (nowDate.getMonth() + 1)).substr(-2) + '-' + ('0' + nowDate.getDate()).substr(-2);
+		else
+			modalDate.value = modalDate.defaultValue;
+
+	if (modalTime != null)
+		if (now || modalTime.defaultValue === "")
+			modalTime.value = ('0' + nowDate.getHours()).substr(-2) + ':' + ('0' + nowDate.getMinutes()).substr(-2);
+		else
+			modalTime.value = modalTime.defaultValue;
+
+	updatePadnamePreview();
+}
+
+
+
 // Modal
 document.getElementById('newPad').addEventListener('click', () => {
-	var createModal = document.getElementById('createModal');
 	createModal.classList.toggle('is-active');
 
+	resetDatetime();
+
 	if(createModal.classList.contains('is-active')) {
-		document.getElementById('modalTextfield').focus();
+		modalPadname.focus();
 	}
 });
 
 
 
+if(modalPadnamePreview != null) {
+	modalPadname.addEventListener('input', updatePadnamePreview);
+	if (modalDate != null)
+		modalDate.addEventListener('input', updatePadnamePreview);
+	if (modalTime != null)
+		modalTime.addEventListener('input', updatePadnamePreview);
+	if (modalNow != null)
+		modalNow.addEventListener('click', e => resetDatetime(true));
+	if (modalReset != null)
+		modalReset.addEventListener('click', e => resetDatetime());
+}
+
+
+
 // Closing the modal
 document.getElementById('createModalClose').addEventListener('click', () => {
-	var createModal = document.getElementById('createModal');
 	createModal.classList.toggle('is-active');
 
 	// remove warning and input from textfield
-	var modalInput = document.getElementById('modalTextfield');
-	modalInput.classList.remove('is-danger');
+	modalPadname.classList.remove('is-danger');
 	document.getElementById('modalForm').reset();
 });
 
@@ -25,7 +85,6 @@ document.getElementById('createModalClose').addEventListener('click', () => {
 
 // Creating a new Pad
 function submitFunction(e) {
-	var modalInput = document.getElementById('modalTextfield');
 	var modalButton = document.getElementById('modalButton');
 	var modalError = document.getElementById('modalError');
 
@@ -42,17 +101,26 @@ function submitFunction(e) {
 
 
 	// Check if there is a name for the new pad
-	if(modalInput.value.trim() === "") {
-		modalInput.classList.add('is-danger');
+	if(modalPadname.value.trim() === "") {
+		modalPadname.classList.add('is-danger');
 	} else {
 		modalButton.classList.add('is-loading');
 
 		var currGroup = document.getElementById('currentGroup').value;
-		var newPadName = modalInput.value;
+		var newPadName = modalPadname.value;
+
+		var timestamp = ""
+		if(modalDate != null && modalTime != null)
+			timestamp = '/' + modalDate.value + 'T' + modalTime.value;
+		else if(modalDate != null)
+			timestamp = '/' + modalDate.value;
+		else if(modalTime != null)
+			timestamp = '/' + modalTime.value;
+
 
 		// Mach mal response
 		request = new XMLHttpRequest();
-		
+
 		request.onreadystatechange = function() {
 			if(this.readyState == 4 && this.status == 200) {
 				modalButton.classList.remove('is-loading');
@@ -61,21 +129,21 @@ function submitFunction(e) {
 
 				// success
 				if(response.code == 0) { // Success
-					modalInput.value = modalInput.getAttribute('data-padname');
+					modalPadname.value = modalPadname.getAttribute('data-padname');
 					modalError.classList.remove('is-danger');
 					modalError.classList.add('is-success');
 					modalError.innerHTML = "Success! Please wait...";
-					location.reload(); 
+					location.reload();
 				} else { // failure in pad creation
-					modalError.innerHTML = response.message	
+					modalError.innerHTML = response.message
 				}
 			}
 		};
 
 		if(fillPadWithContent) { // set content
-			request.open("GET", '/uapi/CreateContentPad/' + currGroup + '/' + newPadName, true);
+			request.open("GET", '/uapi/CreateContentPad/' + currGroup + '/' + newPadName + timestamp, true);
 		} else { // dont set content
-			request.open("GET", '/uapi/CreatePad/' + currGroup + '/' + newPadName, true);
+			request.open("GET", '/uapi/CreatePad/' + currGroup + '/' + newPadName + timestamp, true);
 		}
 		request.send();
 	}
@@ -94,7 +162,7 @@ function padVisibility(pad, newStatus) {
 		'/uapi/PadVisibility/' + pad + '/' + newStatus);
 
 	request.addEventListener('load', function(event) {
-		location.reload(); 
+		location.reload();
 	});
 
 	request.send();
