@@ -74,10 +74,10 @@ padgroups:
 
   admins:
     name: Admins
-	groups:
-	  - admin
-	user:
-	  - hackherz
+    groups:
+      - admin
+    user:
+      - hackherz
 ```
 
 ## Sections
