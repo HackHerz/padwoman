@@ -80,7 +80,7 @@ Description=Padwoman etherpad organizer
 After=syslog.target network.target
 
 [Service]
-Type=simple
+Type=notify
 User=etherpad
 Group=etherpad
 WorkingDirectory=/path/to/padwoman
