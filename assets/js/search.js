@@ -8,14 +8,18 @@ function renderResults(content) {
 		el.innerHTML = template;
 
 		// Title
-		el.getElementsByClassName("card-header-title")[0].appendChild(
+		el.getElementsByClassName("search-title")[0].appendChild(
 			document.createTextNode(hit.title));
 
 		// Content
-		if(hit.content) el.getElementsByClassName("card-content")[0].innerHTML = hit.content;
+		if(hit.content) el.getElementsByClassName("search-content")[0].innerHTML = hit.content;
 
+		// lastmod
+		el.getElementsByClassName("search-lastmod")[0].appendChild(
+			document.createTextNode(hit.lastmod));
 
 		// URL
+		el.getElementsByClassName("button")[0].href = hit.url;
 
 		anchor.appendChild(el);
 	});

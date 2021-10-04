@@ -66,6 +66,8 @@ class Search(Resource):
             r = {
                 'id': result['id'],
                 'title': humanPadName(result['id']),
+                'lastmod': result['lastmod'][0],
+                'url': settings.data['pad']['url'] + result['id']
             }
 
             if result['id'] in hl.keys() and 'content' in hl[result['id']].keys():
@@ -83,7 +85,7 @@ class View(Resource):
         active_group = request.args.get('group')
 
         # default group
-        if active_group == None:
+        if active_group is None:
             active_group = settings.getDefaultGroup(flask_login.current_user.id,
                     flask_login.current_user.groups)
 
