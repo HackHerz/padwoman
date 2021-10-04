@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		{% include 'header.html' %}
+<style>
+em {
+	border-bottom: 1px solid #CBEEFA;
+	box-shadow: 0px -4px 0px #CBEEFA inset;
+}
+</style>
+	</head>
+	<body>
+
+				<!-- for mobile -->
+				<nav class="navbar is-danger is-hidden-desktop" role="navigation" aria-label="main navigation">
+					<div class="navbar-brand">
+						<span class="navbar-item">Gruppen</span>
+						<a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navMenu">
+							<span aria-hidden="true"></span>
+							<span aria-hidden="true"></span>
+							<span aria-hidden="true"></span>
+						</a>
+					</div>
+
+					<div class="navbar-menu" id="navMenu">
+						<div class="navbar-start">
+							{% for group in groups %}
+							<a class="navbar-item{% if group == active_group %} is-active{% endif %}" href="?group={{ group }}">{{ group }}</a>
+							{% endfor %}
+							<a class="navbar-item" href="/logout">
+								<span class="icon"><i class="fas fa-sign-out-alt"></i></span>
+								<span>Logout</span>
+							</a>
+						</div>
+					</div>
+				</nav>
+
+
+		<section class="section">
+			<div class="container">
+				<nav class="level">
+					<div class="level-left">
+						<div class="level-item"><h1 class="title is-1">{{ title }}</h1></div>
+					</div>
+					<div class="level-right is-hidden-touch">
+						<div class="level-item">
+							<a class="button" href="/logout">
+								<span class="icon"><i class="fas fa-sign-out-alt"></i></span>
+								<span>Logout</span>
+							</a>
+						</div>
+					</div>
+				</nav>
+
+				<!-- Show active Group and display Button to create a new pad -->
+				<nav class="level">
+					<div class="level-left">
+						<div class="level-item">
+							<a class="button" href="../?group={{ active_group }}">
+								<span class="icon"><i class="fas fa-chevron-left"></i></span>
+								<span>Zurück</span>
+							</a>
+						</div>
+					</div>
+				</nav>
+			</div>
+		</section>
+
+			<div class="container">
+			<div class="columns">
+				<div class="column">
+
+<nav class="panel">
+  <p class="panel-heading">
+    Suche
+  </p>
+  <div class="panel-block">
+    <p class="control has-icons-left">
+      <input class="input" type="text" placeholder="Search">
+      <span class="icon is-left">
+        <i class="fas fa-search" aria-hidden="true"></i>
+      </span>
+    </p>
+  </div>
+  {% for group in groups %}
+  <a class="panel-block {% if group == active_group %}is-active{% endif %}">
+		<span class="panel-icon">
+		  <i class="fas fa-book" aria-hidden="true"></i>
+		</span>
+		{{ group }}
+	  </a>
+  {% endfor %}
+  <div class="panel-block">
+    <button class="button is-link is-outlined is-fullwidth" onclick="search()">
+      Go
+    </button>
+  </div>
+</nav>
+
+				</div>
+				<div id="searchresult" class="column is-three-quarters">
+					...
+				</div>
+			</div>
+			</div>
+
+<script id="result-template" type=text/x-template>
+<div class="card" style="margin-bottom: 1em;">
+<header class="card-header">
+    <p class="card-header-title"></p>
+  </header>
+  <div class="card-content">
+    <!--<div class="content">-->
+      <!--Lorem ipsum leo risus, porta ac consectetur ac, vestibulum at eros. Donec id elit non mi porta gravida at eget metus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Cras mattis consectetur purus sit amet fermentum.-->
+    <!--</div>-->
+  </div>
+<footer class="card-footer">
+    <a href="#" class="card-footer-item">Open</a>
+  </footer>
+</div>
+</script>
+
+
+		<!-- footer -->
+		{% include 'footer.html' %}
+
+		<!-- JS to make things work -->
+		<script src="{{ url_for('static', filename='js/search.js') }}"></script>
+	</body>
+</html>

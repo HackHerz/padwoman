@@ -10,6 +10,7 @@ from importlib import import_module
 
 # Own stuff
 import microapi
+import search.search as search
 from etherpad_cached_api import *
 from _version import __version__
 from clockwork import updateTimestamps, touchClockwork
@@ -162,6 +163,13 @@ api.add_resource(microapi.PadVisibility,
         '/uapi/PadVisibility/<string:padName>/<string:visibility>')
 
 api.add_resource(microapi.ExportLatex, '/uapi/ExportLatex/<string:padName>')
+
+
+# Search
+api.add_resource(search.Search, '/uapi/search')
+api.add_resource(search.View, '/search')
+
+
 
 # Run
 if __name__ == '__main__':

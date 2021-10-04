@@ -255,9 +255,19 @@ def getPadlist(groupId):
     return padlist
 
 
-# set the public status of a pad
+# get the html content of the pad
 def getHtml(padId):
     data = { 'padID' : padId }
     r = requestHandler('getHTML', data)
 
     return r
+
+
+def getText(padId):
+    data = { 'padID' : padId }
+    r = requestHandler('getText', data)
+
+    if r['code'] == 0:
+        return r['data']['text']
+
+    return None
