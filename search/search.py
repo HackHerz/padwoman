@@ -58,10 +58,11 @@ class Search(Resource):
         if not group or group not in viewableGroups:
             return []
 
-        results = solr.search('id:*{0}* + content:{0}'.format(query), **{
+        results = solr.search('id:*{0}* + content:{0}'.format("+".join(query.split(' '))), **{
             'fq': 'group:' + createGroupIfNotExistsFor(group).decode('ascii'),
             'fl': 'id,lastmod',
             'hl': 'true',
+            'hl.snippets': 5,
             # 'hl.fragsize': 10,
             'hl.fl': 'content',
             'hl.requireFieldMatch': "true"
@@ -79,7 +80,7 @@ class Search(Resource):
             }
 
             if result['id'] in hl.keys() and 'content' in hl[result['id']].keys():
-                r['content'] = '...'.join(hl[result['id']]['content'])
+                r['content'] = ' [...] '.join(hl[result['id']]['content'])
 
             resp.append(r)
 
