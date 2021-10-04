@@ -2,7 +2,7 @@ import pysolr
 from flask import request, make_response, render_template
 from flask_restful import Resource
 import flask_login
-from etherpad_cached_api import listPads, getLastEdited, getText, humanPadName
+from etherpad_cached_api import listPads, getLastEdited, getText, humanPadName, createGroupIfNotExistsFor
 
 import settings
 
@@ -45,13 +45,21 @@ def updateIndex(groupId):
         solr.add(sQuery)
 
 
-# updateIndex('g.sDzoMmut4DIOgrip')
 class Search(Resource):
     @flask_login.login_required
     def get(self):
+        query = request.args.get('query')
+        if not query:
+            return []
 
-        results = solr.search('id:*IT* + content:Daniel', **{
-            'fq': 'group:g.sDzoMmut4DIOgrip',
+        group = request.args.get('group')
+        viewableGroups = settings.getPadGroups(flask_login.current_user.id,
+                                               flask_login.current_user.groups)
+        if not group or group not in viewableGroups:
+            return []
+
+        results = solr.search('id:*{0}* + content:{0}'.format(query), **{
+            'fq': 'group:' + createGroupIfNotExistsFor(group).decode('ascii'),
             'fl': 'id,lastmod',
             'hl': 'true',
             # 'hl.fragsize': 10,

@@ -31,7 +31,6 @@ function renderResults(content) {
 function search() {
 	// Mach mal response
 	request = new XMLHttpRequest();
-
 	request.onreadystatechange = function() {
 		if(this.readyState == 4 && this.status == 200) {
 			response = JSON.parse(request.responseText);
@@ -39,14 +38,38 @@ function search() {
 		}
 	};
 
-	request.open("GET", '/uapi/search', true);
-	request.send();
+	// Build query
+	var formData = new FormData();
+	var query = document.getElementById("searchbar").value;
+	formData.append("query", query);
+
+	// get group
+	var activeGroup = document.querySelector(".panel-block.is-active").lastChild.data.trim();
+	formData.append("group", activeGroup);
+
+	var urlParams = new URLSearchParams(formData).toString();
+
+	request.open("GET", '/uapi/search?' + urlParams, true);
+	request.send(formData);
 }
 
 
 
 // Navbar
 document.addEventListener('DOMContentLoaded', () => {
+	const $panelBlocks = Array.prototype.slice.call(
+		document.querySelectorAll('a.panel-block'), 0);
+
+	$panelBlocks.forEach(pb => {
+		pb.addEventListener('click', () => {
+			$panelBlocks.forEach(pbb => {
+				pbb.classList.remove('is-active');
+			});
+
+			pb.classList.add('is-active');
+		});
+	});
+
 	/*
 	 * Navbar Stuff
 	 */
