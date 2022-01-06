@@ -2,11 +2,13 @@ from pytz import utc
 from flask import render_template
 from flask import request, redirect, url_for, make_response
 from flask import Flask
+from flask import session
 import flask_login
 from flask_restful import Api
 from datetime import timedelta, datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 from importlib import import_module
+import uuid
 
 # Own stuff
 import microapi
@@ -73,6 +75,14 @@ def logout():
     return AuthMechanism.logout()
 
 
+def getPadwomanSession():
+    s = session.get('session')
+    if s is None:
+        s = uuid.uuid4()
+        session['session'] = s
+    return s
+
+
 # Serving the actual site
 @app.route('/')
 @flask_login.login_required
@@ -108,7 +118,7 @@ def index():
 
         # sessions for the user
         etherPadSessions.append(createSession(etherPadGroupIds[g],
-            etherPadAuthor, datetimeNow, validFor, atLeastValidFor))
+            etherPadAuthor, getPadwomanSession(), datetimeNow, validFor, atLeastValidFor))
 
 
     # Gathering information on the relevant pads for this group

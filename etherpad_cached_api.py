@@ -126,8 +126,8 @@ def setPublicStatus(padId, publicStatus):
     return r
 
 # creates a new session. validUntil is an unix timestamp in seconds
-def createSession(groupId, authorId, datetimeNow = datetime.now(), validFor = timedelta(days=1), atLeastValidFor = timedelta(hours=6)):
-    redisKey = f"session:{authorId.decode()}:{groupId.decode()}"
+def createSession(groupId, authorId, padwomanSession, datetimeNow = datetime.now(), validFor = timedelta(days=1), atLeastValidFor = timedelta(hours=6)):
+    redisKey = f"session:{authorId}:{padwomanSession}:{groupId}"
     rVal = red.ttl(redisKey)
 
     # trying the cache
@@ -160,9 +160,9 @@ def listSessionsOfGroup(groupId):
     return []
 
 
-def deleteSession(sessionId, authorId = None, groupId = None):
-    if authorId is not None and groupId is not None:
-        red.delete(f"session:{authorId}:{groupId}")
+def deleteSession(sessionId, authorId = None, groupId = None, padwomanSession = None):
+    if None not in (authorId, groupId, padwomanSession):
+        red.delete(f"session:{authorId}:{padwomanSession}:{groupId}")
 
     data = {'sessionID': sessionId}
     r = requestHandler('deleteSession', data)
