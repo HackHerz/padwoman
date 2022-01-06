@@ -170,6 +170,17 @@ def deleteSession(sessionId, authorId = None, groupId = None, padwomanSession = 
     return r
 
 
+def deleteSessionsOfAuthorAndPadwomanSession(authorId, padwomanSession):
+    keys = red.scan_iter(f"session:{authorId}:{padwomanSession}:*")
+    for key in keys:
+        sessionId = red.get(key)
+
+        data = {'sessionID': sessionId}
+        r = requestHandler('deleteSession', data)
+
+        red.delete(key)
+
+
 def setHtml(padId, html):
     data = { 'padID' : padId, 'html' : html }
     r = requestHandler('setHTML', data)

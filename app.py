@@ -9,6 +9,7 @@ from datetime import timedelta, datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 from importlib import import_module
 import uuid
+import threading
 
 # Own stuff
 import microapi
@@ -71,7 +72,16 @@ def login():
 # Logout
 @app.route('/logout')
 def logout():
+    # logout from etherpad
+    authorId = createAuthorIfNotExistsFor(flask_login.current_user.id,
+            flask_login.current_user.cn)
+    threading.Thread(target=deleteSessionsOfAuthorAndPadwomanSession, args=[authorId, getPadwomanSession()]).start()
+
+    # logout from padwoman
+    session.pop('session', None)
     flask_login.logout_user()
+
+    # logout from auth mechanism
     return AuthMechanism.logout()
 
 
