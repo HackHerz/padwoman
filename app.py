@@ -12,7 +12,7 @@ from importlib import import_module
 import microapi
 from etherpad_cached_api import *
 from _version import __version__
-from clockwork import updateTimestamps, touchClockwork
+from clockwork import updateTimestamps, touchClockwork, deleteExpiredSessions
 
 
 # Flask
@@ -34,6 +34,7 @@ AuthMechanism = getattr(import_module('auth.' + settings.data['auth']['method'])
 sched = BackgroundScheduler(timezone=utc)
 sched.start()
 sched.add_job(updateTimestamps, 'interval', seconds=59)
+sched.add_job(deleteExpiredSessions, 'interval', next_run_time=datetime.utcnow(), days=7)
 
 
 @login_manager.user_loader

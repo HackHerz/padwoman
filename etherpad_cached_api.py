@@ -149,6 +149,27 @@ def createSession(groupId, authorId, datetimeNow = datetime.now(), validFor = ti
     return ""
 
 
+def listSessionsOfGroup(groupId):
+    data = {'groupID': groupId}
+    r = requestHandler('listSessionsOfGroup', data)
+
+    # everything was ok
+    if r['code'] == 0:
+        return r['data']
+
+    return []
+
+
+def deleteSession(sessionId, authorId = None, groupId = None):
+    if authorId is not None and groupId is not None:
+        red.delete(f"session:{authorId}:{groupId}")
+
+    data = {'sessionID': sessionId}
+    r = requestHandler('deleteSession', data)
+
+    return r
+
+
 def setHtml(padId, html):
     data = { 'padID' : padId, 'html' : html }
     r = requestHandler('setHTML', data)
