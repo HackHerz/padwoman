@@ -1,7 +1,7 @@
 import requests
 import redis
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # own stuff
 import settings
@@ -39,7 +39,7 @@ def createAuthorIfNotExistsFor(uid, name):
 
     # trying the cache
     if rVal != None:
-        return rVal
+        return rVal.decode('utf-8')
 
     data = { 'authorMapper' : uid, 'name' : name }
     r = requestHandler('createAuthorIfNotExistsFor', data)
@@ -61,7 +61,7 @@ def createGroupIfNotExistsFor(groupMapper):
 
     # trying the cache
     if rVal != None:
-        return rVal
+        return rVal.decode('utf-8')
 
     data = { 'groupMapper' : groupMapper }
     r = requestHandler('createGroupIfNotExistsFor', data)
@@ -126,16 +126,24 @@ def setPublicStatus(padId, publicStatus):
     return r
 
 # creates a new session. validUntil is an unix timestamp in seconds
-# TODO caching
-def createSession(groupId, authorId, validUntil):
+def createSession(groupId, authorId, datetimeNow = datetime.now(), validFor = timedelta(days=1), atLeastValidFor = timedelta(hours=6)):
+    redisKey = f"session:{authorId.decode()}:{groupId.decode()}"
+    rVal = red.ttl(redisKey)
+
+    # trying the cache
+    if rVal > atLeastValidFor.total_seconds():
+        return red.get(redisKey).decode('utf-8')
+
+    validUntil = round((datetimeNow + validFor).timestamp())
     data = { 'groupID' : groupId, 'authorID' : authorId,
             'validUntil' : validUntil }
-
     r = requestHandler('createSession', data)
 
     # everything was ok
     if r['code'] == 0:
-        return r['data']['sessionID']
+        rVal = r['data']['sessionID']
+        red.set(redisKey, rVal, ex=(datetimeNow + validFor - datetime.now()))
+        return rVal
 
     # Otherwise
     return ""

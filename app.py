@@ -4,7 +4,7 @@ from flask import request, redirect, url_for, make_response
 from flask import Flask
 import flask_login
 from flask_restful import Api
-from datetime import timedelta
+from datetime import timedelta, datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 from importlib import import_module
 
@@ -95,7 +95,9 @@ def index():
     etherPadAuthor = createAuthorIfNotExistsFor(flask_login.current_user.id,
             flask_login.current_user.cn)
 
-    validUntil = int((datetime.now() + timedelta(days=1)).timestamp())
+    datetimeNow = datetime.now()
+    validFor = timedelta(days=1)
+    atLeastValidFor = timedelta(hours=6)
 
     etherPadGroupIds = {}
     etherPadSessions = []
@@ -105,7 +107,7 @@ def index():
 
         # sessions for the user
         etherPadSessions.append(createSession(etherPadGroupIds[g],
-            etherPadAuthor, validUntil))
+            etherPadAuthor, datetimeNow, validFor, atLeastValidFor))
 
 
     # Gathering information on the relevant pads for this group
@@ -131,7 +133,7 @@ def index():
 
     # Building the user cookie
     sessionstring = '%'.join(etherPadSessions)
-    response.set_cookie('sessionID', sessionstring, expires=validUntil,
+    response.set_cookie('sessionID', sessionstring, expires=(datetimeNow + atLeastValidFor),
                         samesite="Strict")
 
     # Flask would escape the ',', but etherpad has become very picky recently
