@@ -2,13 +2,13 @@ var sortPadList;
 
 // based on https://stackoverflow.com/a/49041392
 function initSortPadList() {
-	const getCellValue = (tr, idx) => tr.children[idx].innerText || tr.children[idx].textContent;
+	const getCellValue = (tr, idx) => tr.children[idx].dataset.sort || tr.children[idx].innerText || tr.children[idx].textContent;
 
 	const comparer = (idx, asc) => (a, b) => ((v1, v2) =>
 		v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2)
 		)(getCellValue(asc ? a : b, idx), getCellValue(asc ? b : a, idx));
 
-	const ths = document.querySelectorAll('#padTable th:nth-child(n+2)');
+	const ths = document.querySelectorAll('#padTable th');
 
 	const sort = th => {
 		const tbody = document.querySelector('#padTable>tbody');

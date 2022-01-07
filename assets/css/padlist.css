@@ -19,3 +19,6 @@
 #padTable td:nth-child(3) {
 	white-space: nowrap;
 }
+#padTable td:nth-child(3) span + span {
+	visibility: hidden;
+}

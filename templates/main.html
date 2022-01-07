@@ -94,13 +94,19 @@
 						<tbody>
 							{% for pad in pads %}
 							<tr>
-								<td><a name="visibilityToggle" onclick="padVisibility('{{ pad.id | urlencode }}', {% if pad.public %}'private'{% else %}'public'{% endif %})"
-										title="make this pad {%if pad.public %}private{% else %}public{% endif %}">
-										<span class="icon">{% if pad.public %}<i class="fas fa-globe-americas">{% else %}<i class="fas fa-home">{% endif %}</i></span></a>
-									<a name="contextMenu" data-padid='{{ pad.id | urlencode }}'><span class="icon"><i class="fas fa-ellipsis-h"></i></a>
+								<td data-sort="{{ pad.public }}">{% if pad.public == "Unavailable" %}
+									<a name="visibilityToggle" title="Loading...">
+										<span class="icon"><i class="fas fa-spinner fa-pulse"></i></span></a>{% elif pad.public == "True" %}
+									<a name="visibilityToggle" onclick="padVisibility('{{ pad.id | urlencode }}', 'private')" title="Make this pad private">
+										<span class="icon"><i class="fas fa-globe-americas"></i></span></a>{% elif pad.public == "False" %}
+									<a name="visibilityToggle" onclick="padVisibility('{{ pad.id | urlencode }}', 'public')" title="Make this pad public">
+										<span class="icon"><i class="fas fa-home"></i></span></a>{% else %}
+									<a name="visibilityToogle" title="Error while loading"><span class="icon" style="color: red;"><i class="fas fa-times-circle"></i></span></a>{% endif %}<a name="contextMenu" data-padid='{{ pad.id | urlencode }}'><span class="icon"><i class="fas fa-ellipsis-h"></i></a>
 								</td>
 								<td><a href="{{ pad.url }}">{{ pad.name }}</a></td>
-								<td><span class="tag is-family-monospace">{{ pad.date }}</span></td>
+								<td{% if pad.date == "Unavailable" %} data-sort="{{ now }}">
+									<span class="icon" title="Loading..."><i class="fas fa-spinner fa-pulse"></i></span{% endif %}><span class="tag is-family-monospace">{{ pad.date }}</span>
+									</td>
 							</tr>
 							{% endfor %}
 						</tbody>

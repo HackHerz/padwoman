@@ -131,8 +131,10 @@ def index():
 
 
     # Gathering information on the relevant pads for this group
-    padlist = [] if not groupExistsAndAllowed else getPadlist(
-            etherPadGroupIds[active_group])
+    if groupExistsAndAllowed:
+        padlist = getPadlist(active_group, groupId=etherPadGroupIds[active_group])
+    else:
+        padlist = []
 
     # Sorting the pads descending by last edited, in case client side sorting (js) is disabled
     reverse, field = settings.groupSortby(active_group)
@@ -151,7 +153,8 @@ def index():
         dateDefault=settings.getDateDefault(active_group),
         timeDefault=settings.groupDict.get(active_group, {}).get('timedefault', ""),
         groupExistsAndAllowed=groupExistsAndAllowed,
-        sortField=field, sortReverse=reverse))
+        sortField=field, sortReverse=reverse,
+        now=datetime.now().strftime('%Y-%m-%d %H:%M')))
 
     # Building the user cookie
     sessionstring = '%'.join(etherPadSessions)
