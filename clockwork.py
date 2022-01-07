@@ -49,7 +49,7 @@ def updateTimestamps():
         padList += eca.getPadsFromCache(g)
 
     # getting pads which are in the cache
-    cList = [x.decode('utf-8')[13:] for x in r.keys('pad:lastEdit:*')]
+    cList = [x.decode('utf-8')[13:] for x in r.scan_iter('pad:lastEdit:*')]
 
     # guessing which pads are not in the cache
     notCache = [p for p in padList if p not in cList]
