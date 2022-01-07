@@ -38,7 +38,7 @@ def createAuthorIfNotExistsFor(uid, name):
     rVal = red.get(redisKey)
 
     # trying the cache
-    if rVal != None:
+    if rVal is not None:
         return rVal.decode('utf-8')
 
     data = { 'authorMapper' : uid, 'name' : name }
@@ -60,7 +60,7 @@ def createGroupIfNotExistsFor(groupMapper):
     rVal = red.get(redisKey)
 
     # trying the cache
-    if rVal != None:
+    if rVal is not None:
         return rVal.decode('utf-8')
 
     data = { 'groupMapper' : groupMapper }
@@ -263,7 +263,7 @@ def getPadlist(groupId):
     # Check where values are missing
     for i in range(0, len(padsInGroup)):
         # Public Value
-        if publicRespo[i] == None:
+        if publicRespo[i] is None:
             pub = getPublicStatus(padsInGroup[i])
             cacheUpdate.set("pad:public:%s" % padsInGroup[i], str(pub))
             publicRespo[i] = pub
@@ -271,7 +271,7 @@ def getPadlist(groupId):
             publicRespo[i] = bool(publicRespo[i].decode('utf-8') == "True") # convert from string to boolean
 
         # Last edited value
-        if lastEditResp[i] == None:
+        if lastEditResp[i] is None:
             tm = getLastEdited(padsInGroup[i])
             lastEditResp[i] = tm
             cacheUpdate.set("pad:lastEdit:%s" % padsInGroup[i], tm,
