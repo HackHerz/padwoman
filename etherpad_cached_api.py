@@ -283,7 +283,7 @@ def getPadlist(groupId):
         # Current pad
         p = padsInGroup[i]
 
-        padlist.append({ 'title' : humanPadName(p),
+        padlist.append({ 'name' : humanPadName(p),
             'id' : p,
             'url' : settings.data['pad']['url'] + p,
             'date' : lastEditResp[i],

@@ -136,7 +136,8 @@ def index():
             etherPadGroupIds[active_group])
 
     # Sorting the pads descending by last edited, in case client side sorting (js) is disabled
-    sortedList = sorted(padlist, key=lambda x : x['date'], reverse=True)
+    reverse, field = settings.groupSortby(active_group)
+    sortedList = sorted(padlist, key=lambda x : x[field], reverse=reverse)
 
     # Rendering the View
     response = make_response(render_template('main.html',
@@ -150,7 +151,8 @@ def index():
         datetimeAdjustable=settings.datetimeAdjustable(active_group),
         dateDefault=settings.getDateDefault(active_group),
         timeDefault=settings.groupDict.get(active_group, {}).get('timedefault', ""),
-        groupExistsAndAllowed=groupExistsAndAllowed))
+        groupExistsAndAllowed=groupExistsAndAllowed,
+        sortField=field, sortReverse=reverse))
 
     # Building the user cookie
     sessionstring = '%'.join(etherPadSessions)

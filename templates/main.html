@@ -87,8 +87,8 @@
 						<thead>
 							<tr>
 								<th></th>
-								<th>Padname</th>
-								<th class="desc">Letzte Änderung</th>
+								<th{% if sortField == "name" %} class="{% if sortReverse %}desc{% else %}asc{% endif %}"{% endif %}>Padname</th>
+								<th{% if sortField == "date" %} class="{% if sortReverse %}desc{% else %}asc{% endif %}"{% endif %}>Letzte Änderung</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -99,7 +99,7 @@
 										<span class="icon">{% if pad.public %}<i class="fas fa-globe-americas">{% else %}<i class="fas fa-home">{% endif %}</i></span></a>
 									<a name="contextMenu" data-padid='{{ pad.id | urlencode }}'><span class="icon"><i class="fas fa-ellipsis-h"></i></a>
 								</td>
-								<td><a href="{{ pad.url }}">{{ pad.title }}</a></td>
+								<td><a href="{{ pad.url }}">{{ pad.name }}</a></td>
 								<td><span class="tag is-family-monospace">{{ pad.date }}</span></td>
 							</tr>
 							{% endfor %}

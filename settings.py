@@ -134,6 +134,22 @@ def groupHasTime(group):
     return
 
 
+# get sort rule for group
+def groupSortby(group):
+    reverse, field = True, 'date'
+
+    try:
+        tmp = groupDict[group]['sortby'].split(":", 1)
+        if tmp[0] in ('asc', 'desc'):
+            reverse = tmp[0] == 'desc'
+        if tmp[1] in ('name', 'date'):
+            field = tmp[1]
+    except:
+        pass
+
+    return reverse, field
+
+
 # Helper
 def render(template, timestamp):
     t = Template(template)
