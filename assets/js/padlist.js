@@ -36,7 +36,24 @@ function initSortPadList() {
 	sortPadList = () => sort(document.querySelectorAll('#padTable th.asc, #padTable th.desc')[0]);
 }
 
+function reloadPadlist() {
+	const currGroup = document.querySelector('#currentGroup').value;
+
+	request = new XMLHttpRequest();
+	request.open("GET", '/uapi/getPadlist/' + currGroup);
+
+	request.addEventListener('load', function(event) {
+		location.reload();
+	});
+
+	request.send();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
 	initSortPadList();
 	sortPadList();
+
+	// check if any data is not loaded
+	if(document.querySelectorAll('#padTable td .fa-spinner').length > 0)
+		reloadPadlist();
 });

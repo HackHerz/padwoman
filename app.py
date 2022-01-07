@@ -184,6 +184,8 @@ api.add_resource(microapi.PadVisibility,
 
 api.add_resource(microapi.ExportLatex, '/uapi/ExportLatex/<string:padName>')
 
+api.add_resource(microapi.getPadlist, '/uapi/getPadlist/<string:group>')
+
 # Run
 if __name__ == '__main__':
      app.run(host=settings.data['default'].get('host', '0.0.0.0'), port=settings.data['default'].get('port', '5000'))
