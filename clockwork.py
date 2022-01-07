@@ -46,7 +46,7 @@ def updateTimestamps():
     # getting the padlist
     padList = []
     for g in groupIds:
-        padList += eca.getPadsFromCache(g)
+        padList += eca.listPads(g)
 
     # getting pads which are in the cache
     cList = [x.decode('utf-8')[13:] for x in r.scan_iter('pad:lastEdit:*')]

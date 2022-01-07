@@ -77,16 +77,27 @@ def createGroupIfNotExistsFor(groupMapper):
 
 
 # returns all pads of this group
-def listPads(groupId):
-    data = { 'groupID' : groupId }
-    r = requestHandler('listPads', data)
+def listPads(groupId, forceFresh=False):
+    redisKey = f"padlist:{groupId}"
 
-    # everything was ok
-    if r['code'] == 0:
-        return r['data']['padIDs']
+    cacheVal = None
+    if not forceFresh:
+        cacheVal = red.get(redisKey)
 
-    # Otherwise
-    return []
+    if cacheVal is None:
+        data = {'groupID': groupId}
+        r = requestHandler('listPads', data)
+
+        # everything was ok
+        if r['code'] == 0:
+            pads = r['data']['padIDs']
+            red.set(redisKey, json.dumps(pads), ex=timedelta(days=1))
+            return pads
+
+        return []
+
+    else:
+        return json.loads(cacheVal.decode('utf-8'))
 
 
 # returns the timestamp of the last revision of the pad
@@ -222,27 +233,9 @@ def calcExpTime(datum):
     return value
 
 
-# caching is fun
-def getPadsFromCache(groupId):
-    padsInGroup = []
-
-    # Check Cache for the list of pads
-    redisKey = "padlist:%s" % groupId
-    cacheVal = red.get(redisKey)
-
-    # Was not in cache
-    if cacheVal == None:
-        padsInGroup = listPads(groupId)
-        red.set(redisKey, json.dumps(padsInGroup))
-    else:
-        padsInGroup = json.loads(cacheVal.decode('utf-8'))
-
-    return padsInGroup
-
-
 # returns a list of all pads and their necessary values
 def getPadlist(groupId):
-    padsInGroup = getPadsFromCache(groupId)
+    padsInGroup = listPads(groupId)
 
     # gather information of these pads
     lastEditPipe = red.pipeline()
