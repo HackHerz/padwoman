@@ -149,7 +149,7 @@ def index():
         group_has_time=settings.groupHasTime(active_group),
         datetimeAdjustable=settings.datetimeAdjustable(active_group),
         dateDefault=settings.getDateDefault(active_group),
-        timeDefault=settings.groupDict[active_group].get('timedefault', ""),
+        timeDefault=settings.groupDict.get(active_group, {}).get('timedefault', ""),
         groupExistsAndAllowed=groupExistsAndAllowed))
 
     # Building the user cookie
