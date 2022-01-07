@@ -15,7 +15,7 @@ import threading
 import microapi
 from etherpad_cached_api import *
 from _version import __version__
-from clockwork import updateTimestamps, touchClockwork, deleteExpiredSessions
+from clockwork import deleteExpiredSessions
 
 
 # Flask
@@ -33,10 +33,9 @@ login_manager.login_view = "login"
 User = getattr(import_module('auth.' + settings.data['auth']['method']), 'User')
 AuthMechanism = getattr(import_module('auth.' + settings.data['auth']['method']), 'AuthMechanism')
 
-# Job to renew lastEdit timestamps in the cache
+# Job to delete expired sessions
 sched = BackgroundScheduler(timezone=utc)
 sched.start()
-sched.add_job(updateTimestamps, 'interval', seconds=59)
 sched.add_job(deleteExpiredSessions, 'interval', next_run_time=datetime.utcnow(), days=7)
 
 
@@ -162,12 +161,6 @@ def index():
     # Flask would escape the ',', but etherpad has become very picky recently
     response.headers['Set-Cookie'] = response.headers['Set-Cookie'].replace('%', ',')
     return response
-
-
-# Execute on every request
-@app.before_request
-def do_something_whenever_a_request_comes_in():
-    touchClockwork(sched)
 
 
 # Api for the javascript ui
