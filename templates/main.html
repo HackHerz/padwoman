@@ -2,6 +2,9 @@
 <html>
 	<head>
 		{% include 'header.html' %}
+		<!--padlist stuff-->
+		<script src="{{ url_for('static', filename='js/padlist.js') }}"></script>
+		<link rel="stylesheet" href="{{ url_for('static', filename='css/padlist.css') }}">
 	</head>
 	<body>
 
@@ -75,12 +78,19 @@
 				<!-- list all tables for the active group -->
 				{% if groupExistsAndAllowed %}
 				<div style="overflow: auto;">
-					<table class="table is-fullwidth is-bordered is-hoverable">
+					<table class="table is-fullwidth is-bordered is-hoverable" id="padTable">
 						<colgroup>
-							<col span="1" style="width: 5em;">
+							<col span="1" style="width: 1px;">
 							<col span="1">
-							<col span="1" style="width: 4em;">
+							<col span="1" style="width: 1px;">
 						</colgroup>
+						<thead>
+							<tr>
+								<th></th>
+								<th>Padname</th>
+								<th class="desc">Letzte Änderung</th>
+							</tr>
+						</thead>
 						<tbody>
 							{% for pad in pads %}
 							<tr>

@@ -135,7 +135,7 @@ def index():
     padlist = [] if not groupExistsAndAllowed else getPadlist(
             etherPadGroupIds[active_group])
 
-    # Sorting the pads descending by last edited
+    # Sorting the pads descending by last edited, in case client side sorting (js) is disabled
     sortedList = sorted(padlist, key=lambda x : x['date'], reverse=True)
 
     # Rendering the View
