@@ -21,6 +21,7 @@ from clockwork import deleteExpiredSessions
 # Flask
 app = Flask(__name__, static_folder='assets')
 app.secret_key = settings.getSecretKey()
+app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
 api = Api(app) # API wuhuuu
 
 
