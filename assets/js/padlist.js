@@ -42,8 +42,49 @@ function reloadPadlist() {
 	request = new XMLHttpRequest();
 	request.open("GET", '/uapi/getPadlist/' + currGroup);
 
-	request.addEventListener('load', function(event) {
-		location.reload();
+	request.addEventListener('loadend', function(event) {
+		if(event.target.status == 200) {
+			const padlist = JSON.parse(event.target.response);
+
+			padlist.forEach(p => {
+				const tr = document.querySelector('#pad-' + CSS.escape(p.id));
+
+				// update public
+				const aPublic = tr.querySelector('a');
+				const spanIconPublic = tr.querySelector('td:nth-child(1) span.icon');
+				const public = p.public === "True";
+				aPublic.title = "Make this pad " + (public ? "private" : "public");
+				spanIconPublic.innerHTML = "<i class=\"fas fa-" + (public ? "globe-americas" : "home") + "\"></i>";
+				aPublic.onclick = () => padVisibility(p.id, public ? "private" : "public");
+
+				// update lastEdit
+				const tdLastEdit = tr.querySelector('td:nth-child(3)');
+				const spanLastEdit = tdLastEdit.querySelector('span.tag');
+				const spanIconLastEdit = tdLastEdit.querySelector('span.icon');
+				delete tdLastEdit.dataset.sort;
+				spanLastEdit.innerHTML = p.date;
+				if(spanIconLastEdit !== null)
+					spanIconLastEdit.remove();
+			});
+
+			sortPadList();
+		} else {
+			// update public
+			document.querySelectorAll('#padTable td:nth-child(1) .fa-spinner').forEach(s => {
+				const spanIcon = s.parentNode;
+				const aPublic = spanIcon.parentNode;
+				aPublic.title = "Error while loading";
+				spanIcon.style.color = "red";
+				spanIcon.innerHTML = "<i class=\"fas fa-times-circle\">";
+			});
+			// update lastEdit
+			document.querySelectorAll('#padTable td:nth-child(3) .fa-spinner').forEach(s => {
+				const spanIcon = s.parentNode;
+				spanIcon.title = "Error while loading";
+				spanIcon.style.color = "red";
+				spanIcon.innerHTML = "<i class=\"fas fa-times-circle\">";
+			});
+		}
 	});
 
 	request.send();

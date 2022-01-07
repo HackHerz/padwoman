@@ -93,7 +93,7 @@
 						</thead>
 						<tbody>
 							{% for pad in pads %}
-							<tr>
+							<tr id="pad-{{ pad.id }}">
 								<td data-sort="{{ pad.public }}">{% if pad.public == "Unavailable" %}
 									<a name="visibilityToggle" title="Loading...">
 										<span class="icon"><i class="fas fa-spinner fa-pulse"></i></span></a>{% elif pad.public == "True" %}
