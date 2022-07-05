@@ -54,7 +54,10 @@ def getSecretKey():
 
 
 def getDefaultGroup(uid, groupids):
-    return getPadGroups(uid, groupids)[0]
+    try:
+        return getPadGroups(uid, groupids)[0]
+    except IndexError:
+        return None
 
 
 # check if the group has a name suggestion
