@@ -1,7 +1,8 @@
 import requests
 import redis
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
+from threading import Thread, Lock
 
 # own stuff
 import settings
@@ -9,6 +10,9 @@ import settings
 
 # setup redis
 red = redis.Redis(**settings.data['redis'])
+
+# setup mutex for each padGroup to use in getPadlist
+mutex = {g: Lock() for g in settings.groupDict.keys()}
 
 
 def requestHandler(endpoint, data):
@@ -38,8 +42,8 @@ def createAuthorIfNotExistsFor(uid, name):
     rVal = red.get(redisKey)
 
     # trying the cache
-    if rVal != None:
-        return rVal
+    if rVal is not None:
+        return rVal.decode('utf-8')
 
     data = { 'authorMapper' : uid, 'name' : name }
     r = requestHandler('createAuthorIfNotExistsFor', data)
@@ -60,8 +64,8 @@ def createGroupIfNotExistsFor(groupMapper):
     rVal = red.get(redisKey)
 
     # trying the cache
-    if rVal != None:
-        return rVal
+    if rVal is not None:
+        return rVal.decode('utf-8')
 
     data = { 'groupMapper' : groupMapper }
     r = requestHandler('createGroupIfNotExistsFor', data)
@@ -77,68 +81,154 @@ def createGroupIfNotExistsFor(groupMapper):
 
 
 # returns all pads of this group
-def listPads(groupId):
-    data = { 'groupID' : groupId }
-    r = requestHandler('listPads', data)
+def listPads(groupId, forceFresh=False):
+    redisKey = f"padlist:{groupId}"
 
-    # everything was ok
-    if r['code'] == 0:
-        return r['data']['padIDs']
+    cacheVal = None
+    if not forceFresh:
+        cacheVal = red.get(redisKey)
 
-    # Otherwise
-    return []
+    if cacheVal is None:
+        data = {'groupID': groupId}
+        r = requestHandler('listPads', data)
+
+        # everything was ok
+        if r['code'] == 0:
+            pads = r['data']['padIDs']
+            red.set(redisKey, json.dumps(pads), ex=timedelta(days=1))
+            return pads
+
+        return []
+
+    else:
+        return json.loads(cacheVal.decode('utf-8'))
 
 
 # returns the timestamp of the last revision of the pad
-def getLastEdited(padId):
-    data = { 'padID' : padId }
+def getLastEdited(padId, forceFresh=False):
+    redisKey = f"pad:lastEdit:{padId}"
+
+    rVal = None
+    if not forceFresh:
+        rVal = red.get(redisKey)
+
+    # trying the cache
+    if rVal is not None:
+        return rVal.decode('utf-8')
+
+    data = {'padID': padId}
     r = requestHandler('getLastEdited', data)
 
     # everything was ok
     if r['code'] == 0:
-        timestamp = int(r['data']['lastEdited']) / 1000
-        return datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M')
+        editTime = datetime.fromtimestamp(int(r['data']['lastEdited']) / 1000)
+        rVal = editTime.strftime('%Y-%m-%d %H:%M')
+
+        # 20s per day
+        expire = ((datetime.now() - editTime) * 20).days
+        # between 1min and 1hour
+        expire = max(60, min(3600, expire))
+
+        red.set(redisKey, rVal, ex=expire)
+        return rVal
 
     # Otherwise
-    return "0"
+    return "1970-01-01 00:00"
+
 
 # returns if the pad is public
-def getPublicStatus(padId):
-    data = { 'padID' : padId }
+def getPublicStatus(padId, forceFresh=False):
+    redisKey = f"pad:public:{padId}"
+
+    rVal = None
+    if not forceFresh:
+        rVal = red.get(redisKey)
+
+    # trying the cache
+    if rVal is not None:
+        return rVal.decode('utf-8')
+
+    data = {'padID': padId}
     r = requestHandler('getPublicStatus', data)
 
     # everything was ok
     if r['code'] == 0:
-        return r['data']['publicStatus']
+        rVal = "True" if r['data']['publicStatus'] else "False"
+        red.set(redisKey, rVal)
+        return rVal
 
     # Otherwise
-    return False
+    return ""
 
 # set the public status of a pad
 def setPublicStatus(padId, publicStatus):
-    red.delete("pad:public:%s" % padId)
+    redisKey = f"pad:public:{padId}"
 
     data = { 'padID' : padId,
             'publicStatus' : "true" if publicStatus else "false" }
 
     r = requestHandler('setPublicStatus', data)
+    if r['code'] == 0:
+        red.set(redisKey, "True" if publicStatus else "False")
+    else:
+        red.delete(redisKey)
 
     return r
 
 # creates a new session. validUntil is an unix timestamp in seconds
-# TODO caching
-def createSession(groupId, authorId, validUntil):
+def createSession(groupId, authorId, padwomanSession, datetimeNow = datetime.now(), validFor = timedelta(days=1), atLeastValidFor = timedelta(hours=6)):
+    redisKey = f"session:{authorId}:{padwomanSession}:{groupId}"
+    rVal = red.ttl(redisKey)
+
+    # trying the cache
+    if rVal > atLeastValidFor.total_seconds():
+        return red.get(redisKey).decode('utf-8')
+
+    validUntil = round((datetimeNow + validFor).timestamp())
     data = { 'groupID' : groupId, 'authorID' : authorId,
             'validUntil' : validUntil }
-
     r = requestHandler('createSession', data)
 
     # everything was ok
     if r['code'] == 0:
-        return r['data']['sessionID']
+        rVal = r['data']['sessionID']
+        red.set(redisKey, rVal, ex=(datetimeNow + validFor - datetime.now()))
+        return rVal
 
     # Otherwise
     return ""
+
+
+def listSessionsOfGroup(groupId):
+    data = {'groupID': groupId}
+    r = requestHandler('listSessionsOfGroup', data)
+
+    # everything was ok
+    if r['code'] == 0:
+        return r['data']
+
+    return []
+
+
+def deleteSession(sessionId, authorId = None, groupId = None, padwomanSession = None):
+    if None not in (authorId, groupId, padwomanSession):
+        red.delete(f"session:{authorId}:{padwomanSession}:{groupId}")
+
+    data = {'sessionID': sessionId}
+    r = requestHandler('deleteSession', data)
+
+    return r
+
+
+def deleteSessionsOfAuthorAndPadwomanSession(authorId, padwomanSession):
+    keys = red.scan_iter(f"session:{authorId}:{padwomanSession}:*")
+    for key in keys:
+        sessionId = red.get(key)
+
+        data = {'sessionID': sessionId}
+        r = requestHandler('deleteSession', data)
+
+        red.delete(key)
 
 
 def setHtml(padId, html):
@@ -158,99 +248,64 @@ def humanPadName(padId):
     return padId
 
 
-# Calcualte the time before expiration
-def calcExpTime(datum):
-    if(len(datum) < 10):
-        return 60
-
-    year = int(datum[0:4])
-    month = int(datum[5:7])
-    day = int(datum[8:10])
-
-    dStamp = datetime(year, month, day)
-    delta = datetime.now() - dStamp
-
-    value = delta.days * 20 # 20s per day
-
-    # Min and max values
-    if value < 60:
-        return 60
-
-    if value > 3600:
-        return 3600
-
-    return value
-
-
-# caching is fun
-def getPadsFromCache(groupId):
-    padsInGroup = []
-
-    # Check Cache for the list of pads
-    redisKey = "padlist:%s" % groupId
-    cacheVal = red.get(redisKey)
-
-    # Was not in cache
-    if cacheVal == None:
-        padsInGroup = listPads(groupId)
-        red.set(redisKey, json.dumps(padsInGroup))
-    else:
-        padsInGroup = json.loads(cacheVal.decode('utf-8'))
-
-    return padsInGroup
-
-
 # returns a list of all pads and their necessary values
-def getPadlist(groupId):
-    padsInGroup = getPadsFromCache(groupId)
+def getPadlist(group, groupId=None, synchronous=False):
+    if groupId is None:
+        groupId = createGroupIfNotExistsFor(group)
+
+    padIds = listPads(groupId)
 
     # gather information of these pads
     lastEditPipe = red.pipeline()
     publicPipe = red.pipeline()
 
     # Load Values from Cache
-    for p in padsInGroup:
-        lastEditPipe.get("pad:lastEdit:%s" % p)
-        publicPipe.get("pad:public:%s" % p)
+    for p in padIds:
+        lastEditPipe.get(f"pad:lastEdit:{p}")
+        publicPipe.get(f"pad:public:{p}")
 
-    # execute pipes
-    lastEditResp = lastEditPipe.execute()
-    publicRespo = publicPipe.execute()
+    needFetch = False
 
-    cacheUpdate = red.pipeline()
-    padlist = []
+    def preparePad(padId, lastEdit, public):
+        nonlocal needFetch
 
-    # Check where values are missing
-    for i in range(0, len(padsInGroup)):
-        # Public Value
-        if publicRespo[i] == None:
-            pub = getPublicStatus(padsInGroup[i])
-            cacheUpdate.set("pad:public:%s" % padsInGroup[i], str(pub))
-            publicRespo[i] = pub
+        if public is not None:
+            public = public.decode('utf-8')
         else:
-            publicRespo[i] = bool(publicRespo[i].decode('utf-8') == "True") # convert from string to boolean
+            if synchronous:
+                public = getPublicStatus(padId, True)
+            else:
+                public = "Unavailable"
+                needFetch = True
 
-        # Last edited value
-        if lastEditResp[i] == None:
-            tm = getLastEdited(padsInGroup[i])
-            lastEditResp[i] = tm
-            cacheUpdate.set("pad:lastEdit:%s" % padsInGroup[i], tm,
-                    calcExpTime(tm))
-
+        if lastEdit is not None:
+            lastEdit = lastEdit.decode('utf-8')
         else:
-            lastEditResp[i] = lastEditResp[i].decode('utf-8')
+            if synchronous:
+                lastEdit = getLastEdited(padId, True)
+            else:
+                lastEdit = "Unavailable"
+                needFetch = True
 
-        # Current pad
-        p = padsInGroup[i]
+        return {'name': humanPadName(padId),
+                'id': padId,
+                'url': settings.data['pad']['url'] + padId,
+                'date': lastEdit,
+                'public': public}
 
-        padlist.append({ 'title' : humanPadName(p),
-            'id' : p,
-            'url' : settings.data['pad']['url'] + p,
-            'date' : lastEditResp[i],
-            'public' : publicRespo[i] })
+    # acquire mutex so if another thread fetches this group, we can read its data from redis after it is done
+    if synchronous:
+        mutex[group].acquire()
 
-    # perform actual cache update
-    cacheUpdate.execute()
+    padlist = [preparePad(p, le, pub) for p, le, pub in zip(padIds, lastEditPipe.execute(), publicPipe.execute())]
+
+    # release mutex after fetching data
+    if synchronous:
+        mutex[group].release()
+
+    # the data will be requested soon, so better start fetching
+    if needFetch and not synchronous:
+        Thread(target=getPadlist, args=[group, groupId, True]).start()
 
     return padlist
 

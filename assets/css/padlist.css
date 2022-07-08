@@ -1,0 +1,24 @@
+#padTable th::after {
+	content: "\25bc";
+	display: inline-block;
+	padding: 0 0.2em;
+	visibility: hidden;
+	transform: rotateX(180deg);
+	transition: transform 0.5s linear;
+}
+#padTable th.asc::after {
+	visibility: visible;
+	transform: rotateX(0deg);
+}
+#padTable th.desc::after {
+	visibility: visible;
+}
+#padTable th:nth-child(1),
+#padTable th:nth-child(3),
+#padTable td:nth-child(1),
+#padTable td:nth-child(3) {
+	white-space: nowrap;
+}
+#padTable td:nth-child(3) span + span {
+	visibility: hidden;
+}

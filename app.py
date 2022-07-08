@@ -2,22 +2,26 @@ from pytz import utc
 from flask import render_template
 from flask import request, redirect, url_for, make_response
 from flask import Flask
+from flask import session
 import flask_login
 from flask_restful import Api
-from datetime import timedelta
+from datetime import timedelta, datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 from importlib import import_module
+import uuid
+import threading
 
 # Own stuff
 import microapi
 from etherpad_cached_api import *
 from _version import __version__
-from clockwork import updateTimestamps, touchClockwork
+from clockwork import deleteExpiredSessions
 
 
 # Flask
 app = Flask(__name__, static_folder='assets')
 app.secret_key = settings.getSecretKey()
+app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
 api = Api(app) # API wuhuuu
 
 
@@ -30,10 +34,10 @@ login_manager.login_view = "login"
 User = getattr(import_module('auth.' + settings.data['auth']['method']), 'User')
 AuthMechanism = getattr(import_module('auth.' + settings.data['auth']['method']), 'AuthMechanism')
 
-# Job to renew lastEdit timestamps in the cache
+# Job to delete expired sessions
 sched = BackgroundScheduler(timezone=utc)
 sched.start()
-sched.add_job(updateTimestamps, 'interval', seconds=59)
+sched.add_job(deleteExpiredSessions, 'interval', next_run_time=datetime.utcnow(), days=7)
 
 
 @login_manager.user_loader
@@ -68,8 +72,25 @@ def login():
 # Logout
 @app.route('/logout')
 def logout():
+    # logout from etherpad
+    authorId = createAuthorIfNotExistsFor(flask_login.current_user.id,
+            flask_login.current_user.cn)
+    threading.Thread(target=deleteSessionsOfAuthorAndPadwomanSession, args=[authorId, getPadwomanSession()]).start()
+
+    # logout from padwoman
+    session.pop('session', None)
     flask_login.logout_user()
+
+    # logout from auth mechanism
     return AuthMechanism.logout()
+
+
+def getPadwomanSession():
+    s = session.get('session')
+    if s is None:
+        s = uuid.uuid4()
+        session['session'] = s
+    return s
 
 
 # Serving the actual site
@@ -95,7 +116,9 @@ def index():
     etherPadAuthor = createAuthorIfNotExistsFor(flask_login.current_user.id,
             flask_login.current_user.cn)
 
-    validUntil = int((datetime.now() + timedelta(days=1)).timestamp())
+    datetimeNow = datetime.now()
+    validFor = timedelta(days=1)
+    atLeastValidFor = timedelta(hours=6)
 
     etherPadGroupIds = {}
     etherPadSessions = []
@@ -105,15 +128,18 @@ def index():
 
         # sessions for the user
         etherPadSessions.append(createSession(etherPadGroupIds[g],
-            etherPadAuthor, validUntil))
+            etherPadAuthor, getPadwomanSession(), datetimeNow, validFor, atLeastValidFor))
 
 
     # Gathering information on the relevant pads for this group
-    padlist = [] if not groupExistsAndAllowed else getPadlist(
-            etherPadGroupIds[active_group])
+    if groupExistsAndAllowed:
+        padlist = getPadlist(active_group, groupId=etherPadGroupIds[active_group])
+    else:
+        padlist = []
 
-    # Sorting the pads descending by last edited
-    sortedList = sorted(padlist, key=lambda x : x['date'], reverse=True)
+    # Sorting the pads descending by last edited, in case client side sorting (js) is disabled
+    reverse, field = settings.groupSortby(active_group)
+    sortedList = sorted(padlist, key=lambda x : x[field], reverse=reverse)
 
     # Rendering the View
     response = make_response(render_template('main.html',
@@ -126,23 +152,19 @@ def index():
         group_has_time=settings.groupHasTime(active_group),
         datetimeAdjustable=settings.datetimeAdjustable(active_group),
         dateDefault=settings.getDateDefault(active_group),
-        timeDefault=settings.groupDict[active_group].get('timedefault', ""),
-        groupExistsAndAllowed=groupExistsAndAllowed))
+        timeDefault=settings.groupDict.get(active_group, {}).get('timedefault', ""),
+        groupExistsAndAllowed=groupExistsAndAllowed,
+        sortField=field, sortReverse=reverse,
+        now=datetime.now().strftime('%Y-%m-%d %H:%M')))
 
     # Building the user cookie
     sessionstring = '%'.join(etherPadSessions)
-    response.set_cookie('sessionID', sessionstring, expires=validUntil,
+    response.set_cookie('sessionID', sessionstring, expires=(datetimeNow + atLeastValidFor),
                         samesite="Strict")
 
     # Flask would escape the ',', but etherpad has become very picky recently
     response.headers['Set-Cookie'] = response.headers['Set-Cookie'].replace('%', ',')
     return response
-
-
-# Execute on every request
-@app.before_request
-def do_something_whenever_a_request_comes_in():
-    touchClockwork(sched)
 
 
 # Api for the javascript ui
@@ -162,6 +184,8 @@ api.add_resource(microapi.PadVisibility,
         '/uapi/PadVisibility/<string:padName>/<string:visibility>')
 
 api.add_resource(microapi.ExportLatex, '/uapi/ExportLatex/<string:padName>')
+
+api.add_resource(microapi.getPadlist, '/uapi/getPadlist/<string:group>')
 
 # Run
 if __name__ == '__main__':

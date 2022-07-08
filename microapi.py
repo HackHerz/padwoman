@@ -3,9 +3,10 @@ from flask import Response
 import flask_login
 import re
 from latex import latex
+from datetime import datetime
 
 # own stuff
-from etherpad_cached_api import *
+import etherpad_cached_api as eca
 import settings
 
 
@@ -28,7 +29,7 @@ def parseTimestamp(timestamp):
 class CreatePadDatetime(Resource):
     @flask_login.login_required
     def get(self, padName, group, timestamp):
-        ethGid = createGroupIfNotExistsFor(group)
+        ethGid = eca.createGroupIfNotExistsFor(group)
 
         time = parseTimestamp(timestamp)
 
@@ -42,7 +43,7 @@ class CreatePadDatetime(Resource):
         if not bool(re.match(r'.*[a-zA-z]{1,}', padName)):
             return { 'code' : 6, 'message' : 'Probiere es mal mit Buchstaben' }
 
-        return createGroupPad(ethGid, padName)
+        return eca.createGroupPad(ethGid, padName)
 
 
 # Creating a pad with content
@@ -55,7 +56,7 @@ class CreateContentPadDatetime(CreatePadDatetime):
 
         # Pad Creation was a success, now content
         if response['code'] == 0:
-            return setHtml(response['data']['padID'],
+            return eca.setHtml(response['data']['padID'],
                     settings.getGroupTemplate(group, time))
 
         return response
@@ -90,14 +91,20 @@ class PadVisibility(Resource):
         if v == None:
             return { 'code' : 3, 'message' : 'not ok' }
 
-        return setPublicStatus(padName, v)
+        return eca.setPublicStatus(padName, v)
 
 
 # Export LaTeX of Pad
 class ExportLatex(Resource):
     @flask_login.login_required
     def get(self, padName):
-        j = getHtml(padName)
+        j = eca.getHtml(padName)
         r = Response(latex(j['data']['html']), mimetype='application/x-latex')
         r.headers['Content-Disposition'] = 'attachment; filename=%s.tex' % padName.split('$')[1]
         return r
+
+
+class getPadlist(Resource):
+    @flask_login.login_required
+    def get(self, group):
+        return eca.getPadlist(group, synchronous=True)

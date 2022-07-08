@@ -54,7 +54,10 @@ def getSecretKey():
 
 
 def getDefaultGroup(uid, groupids):
-    return getPadGroups(uid, groupids)[0]
+    try:
+        return getPadGroups(uid, groupids)[0]
+    except IndexError:
+        return None
 
 
 # check if the group has a name suggestion
@@ -97,35 +100,57 @@ def groupTemplateMandatory(group):
 
 # check if the datetime is adjustable for the group
 def datetimeAdjustable(group):
-    if "datetimeadjustable" in groupDict[group].keys():
-        return groupDict[group]['datetimeadjustable']
+    if group in groupDict.keys():
+        if "datetimeadjustable" in groupDict[group].keys():
+            return groupDict[group]['datetimeadjustable']
 
     return False
 
 
 # calculate default date from defaultweekday
 def getDateDefault(group):
-    if "weekdaydefault" in groupDict[group].keys():
-        weekdaydefault = max(1, min(7, int(groupDict[group]['weekdaydefault'])))
-        d = datetime.date.today()
-        while d.isoweekday() != weekdaydefault:
-            d += datetime.timedelta(1)
-        return d.strftime("%Y-%m-%d")
+    if group in groupDict.keys():
+        if "weekdaydefault" in groupDict[group].keys():
+            weekdaydefault = max(1, min(7, int(groupDict[group]['weekdaydefault'])))
+            d = datetime.date.today()
+            while d.isoweekday() != weekdaydefault:
+                d += datetime.timedelta(1)
+            return d.strftime("%Y-%m-%d")
 
     return ""
 
 # check if either the name or content include the date
 def groupHasDate(group):
-    pattern = "{{ *date(time)? *}}"
-    return (search(pattern, groupDict[group].get('padname', "")) is not None
-            or search(pattern, groupDict[group].get('content', "")) is not None)
+    if group in groupDict.keys():
+        pattern = "{{ *date(time)? *}}"
+        return (search(pattern, groupDict[group].get('padname', "")) is not None
+                or search(pattern, groupDict[group].get('content', "")) is not None)
+    return False
 
 
 # check if either the name or content include the date
 def groupHasTime(group):
-    pattern = "{{ *(date)?time *}}"
-    return (search(pattern, groupDict[group].get('padname', "")) is not None
-            or search(pattern, groupDict[group].get('content', "")) is not None)
+    if group in groupDict.keys():
+        pattern = "{{ *(date)?time *}}"
+        return (search(pattern, groupDict[group].get('padname', "")) is not None
+                or search(pattern, groupDict[group].get('content', "")) is not None)
+    return
+
+
+# get sort rule for group
+def groupSortby(group):
+    reverse, field = True, 'date'
+
+    try:
+        tmp = groupDict[group]['sortby'].split(":", 1)
+        if tmp[0] in ('asc', 'desc'):
+            reverse = tmp[0] == 'desc'
+        if tmp[1] in ('name', 'date'):
+            field = tmp[1]
+    except:
+        pass
+
+    return reverse, field
 
 
 # Helper
